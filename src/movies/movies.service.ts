@@ -8,7 +8,7 @@ export interface Movie {
 }
 
 @Injectable()
-export class AppService {
+export class MoviesService {
   private idCounter = 5;
 
   private movies: Movie[] = [

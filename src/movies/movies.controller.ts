@@ -1,26 +1,26 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
-  Patch,
   Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
 } from '@nestjs/common';
-import { AppService } from './app.service';
+import { MoviesService } from './movies.service';
 
-@Controller('movie')
-export class AppController {
-  constructor(private readonly appService: AppService) {}
+@Controller('movies')
+export class MoviesController {
+  constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
   getMovies() {
-    return this.appService.getManyMovies();
+    return this.moviesService.getManyMovies();
   }
 
   @Get(':id')
   getMovie(@Param('id') id: string) {
-    return this.appService.getMovieById(+id);
+    return this.moviesService.getMovieById(+id);
   }
 
   @Post()
@@ -29,7 +29,7 @@ export class AppController {
     @Body('title') title: string,
   ) {
     console.log(`Creating movie with title: ${title}`);
-    return this.appService.createMovie(title, body.name, body.character);
+    return this.moviesService.createMovie(title, body.name, body.character);
   }
 
   @Patch(':id')
@@ -38,13 +38,18 @@ export class AppController {
     @Body() body: { name?: string; character?: string[] },
     @Body('title') title: string,
   ) {
-    return this.appService.updateMovie(+id, title, body.name, body.character);
+    return this.moviesService.updateMovie(
+      +id,
+      title,
+      body.name,
+      body.character,
+    );
   }
 
   @Delete(':id')
   deleteMovie(@Param('id') id: string) {
     console.log(`Deleting movie with ID: ${id}`);
-    this.appService.deleteMovie(+id);
+    this.moviesService.deleteMovie(+id);
 
     return {
       message: `Deleted movie with ID: ${id}`,
