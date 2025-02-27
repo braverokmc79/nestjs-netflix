@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { CreateMovieDto } from './dto/create-movie.dto';
+import { UpdateMovieDto } from './dto/update-movie.dto';
 
 export interface Movie {
   id: number;
   title: string;
-  name: string;
-  character: string[];
+  genre: string;
 }
 
 @Injectable()
@@ -15,26 +16,22 @@ export class MoviesService {
     {
       id: 1,
       title: 'The Shawshank Redemption',
-      name: '스크린',
-      character: ['스크', '스 '],
+      genre: 'Drama',
     },
     {
       id: 2,
       title: 'The Godfather',
-      name: '미디안',
-      character: ['미디안', 'AA'],
+      genre: 'fantasy',
     },
     {
       id: 3,
       title: 'Pulp Fiction',
-      name: '레나',
-      character: ['레나', '로버트 T. 로스'],
+      genre: 'horror',
     },
     {
       id: 4,
       title: 'The Dark Knight',
-      name: '블 Panther',
-      character: ['블11 Panther', 'aa'],
+      genre: 'Action',
     },
   ];
 
@@ -50,26 +47,23 @@ export class MoviesService {
     return movie;
   }
 
-  createMovie(title: string, name: string, character: string[]) {
+  createMovie(createMovieDto: CreateMovieDto) {
     this.idCounter++;
     this.movies.push({
       id: this.idCounter,
-      title,
-      name,
-      character,
+      ...createMovieDto,
     });
+
     return this.getMovieById(this.idCounter);
   }
 
-  updateMovie(id: number, title?: string, name?: string, character?: string[]) {
+  updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
     const movie = this.getMovieById(id);
     if (!movie) {
       throw new Error(`No movie found with id ${id}`);
     }
 
-    if (title) Object.assign(movie, { title });
-    if (name) Object.assign(movie, { name });
-    if (character) Object.assign(movie, { character });
+    Object.assign(movie, updateMovieDto);
     return movie;
   }
 
