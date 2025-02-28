@@ -24,3 +24,7 @@ npx prettier --write .
     ]
   }
 }
+
+
+
+# pnpm install class-validator class-transformer
