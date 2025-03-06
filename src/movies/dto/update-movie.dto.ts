@@ -1,4 +1,63 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationOptions,
+  registerDecorator,
+} from 'class-validator';
+
+
+enum MovieGenre {
+  Drama = 'Drama',
+  Action = 'Action',
+  Comedy = 'Comedy',
+  Horror = 'Horror',
+  Romance = 'Romance',
+  Fantasy = 'Fantasy',
+  ScienceFiction = 'Science Fiction',
+}
+
+@ValidatorConstraint({
+  async: true,
+})
+class PasswordValidator implements ValidatorConstraintInterface {
+  validate(value: any,validationArguments?: ValidationArguments,): Promise<boolean> | boolean {
+    console.log(validationArguments);
+    if (typeof value === 'string' || Array.isArray(value)) {
+      return value.length > 4 && value.length < 8;
+    } else {
+      // You could throw an error or return a default value here
+      return false;
+    }
+  }
+
+
+  defaultMessage(validationArguments?: ValidationArguments): string {
+    //throw new Error('Method not implemented.');
+    console.log("defaultMessage  ",validationArguments);
+    return "비밀번호 오류";
+  }
+}
+
+function IsPasswordValid(validationOptions?: ValidationOptions){
+  return function(object: object, propertyName: string){
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator:PasswordValidator,
+    });
+  }
+
+}
+
+
+
 
 export class UpdateMovieDto {
   /**
@@ -16,5 +75,19 @@ export class UpdateMovieDto {
 
   @IsNotEmpty()
   @IsOptional()
+  @IsString()
+  @IsEnum(MovieGenre)
   genre?: string;
+
+  //@IsEnum(MovieGenre)
+  //test: string[];
+
+  @Validate(PasswordValidator)
+  password: string;
+
+
+  @IsPasswordValid({
+    message: '비밀번호 오류'
+  })  
+  test: string;
 }
