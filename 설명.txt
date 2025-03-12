@@ -1,0 +1,42 @@
+기존 파일의 줄바꿈 변환
+이미 작성된 파일이 CRLF로 저장되어 있다면, 다음 명령어를 실행해 한 번에 LF로 변환할 수 있습니다.
+
+bash
+복사
+편집
+npx prettier --write .
+
+
+
+
+
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "endOfLine": "lf",
+
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ]
+  }
+}
+
+
+# 설치  : 
+
+# pnpm install class-validator class-transformer
+
+
+# @nestjs/config → 환경 변수 및 설정 파일을 관리하는 NestJS 모듈입니다.
+# joi → 객체의 유효성을 검사하는 데이터 검증 라이브러리입니다.
+# @nestjs/typeorm → NestJS에서 TypeORM을 쉽게 사용할 수 있도록 지원하는 모듈입니다.
+# typeorm → TypeScript 기반 ORM으로, 데이터베이스와 객체를 매핑하는 라이브러리입니다.
+# pg → PostgreSQL과 통신하기 위한 데이터베이스 드라이버입니다.
+
+$ pnpm i @nestjs/config joi @nestjs/typeorm typeorm pg
+
+
