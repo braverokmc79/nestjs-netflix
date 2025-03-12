@@ -17,9 +17,34 @@ export class MoviesService {
     movie1.id = 1;
     movie1.title = 'The Shawshank Redemption';
     movie1.genre = 'Drama';
-    const movie2 = new Movie(2, 'The Godfather', 'Crime, Drama');
-    const movie3 = new Movie(3, 'Pulp Fiction', 'hello');
-    const movie4 = new Movie(4, 'The Dark Knight', 'Action');
+    movie1.createdAt = new Date();
+    movie1.updatedAt = new Date();
+    movie1.version = 1;
+
+    const movie2 = new Movie();
+    movie2.id = 2;
+    movie2.title = 'The Godfather';
+    movie2.genre = 'Crime, Drama';
+    movie1.createdAt = new Date();
+    movie1.updatedAt = new Date();
+    movie1.version = 1;
+    
+    const movie3 = new Movie();
+    movie3.id = 3;
+    movie3.title = 'Pulp Fiction';
+    movie3.genre = 'Crime, Drama';
+    movie1.createdAt = new Date();
+    movie1.updatedAt = new Date();
+    movie1.version = 1;
+    
+    const movie4 = new Movie();
+    movie4.id = 4;
+    movie4.title = 'The Dark Knight';
+    movie4.genre = 'Action';
+    movie1.createdAt = new Date();
+    movie1.updatedAt = new Date();
+    movie1.version = 1;
+    
 
     this.movies.push(movie1, movie2, movie3, movie4);
   }
@@ -41,7 +66,9 @@ export class MoviesService {
     const newMovie: Movie = {
       id: this.idCounter++,
       ...createMovieDto,
-      description: `2222${createMovieDto.title} - ${createMovieDto.genre}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: 0,
     };
 
     this.movies.push(newMovie);
