@@ -8,19 +8,20 @@ import {
   Delete,
   ClassSerializerInterceptor,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 
-@Controller('movies')
+@Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  getMovies() {    
-    return this.moviesService.getManyMovies();
+  getMovies(@Query('title') title?: string) {
+    return this.moviesService.getManyMovies(title);
   }
 
   @Get(':id')
@@ -40,7 +41,7 @@ export class MoviesController {
   }
 
   @Delete(':id')
-  async  deleteMovie(@Param('id') id: string) {
+  async deleteMovie(@Param('id') id: string) {
     console.log(`Deleting movie with ID: ${id}`);
     await this.moviesService.deleteMovie(+id);
 
