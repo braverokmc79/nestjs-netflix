@@ -69,25 +69,25 @@ export class UpdateMovieDto {
    * - 해당 필드는 선택적으로 제공할 수 있음 (`undefined`일 경우 검증 대상에서 제외됨)
    * - 즉, 요청에서 `title`이 포함되지 않으면 무시되지만, 포함될 경우 `@IsNotEmpty()` 조건을 만족해야 함
    */
-  @IsNotEmpty()
-  @IsOptional()
-  title?: string;
+    @IsNotEmpty()
+    @IsOptional()
+    title?: string;
 
-  @IsNotEmpty()
-  @IsOptional()
-  @IsString()
-  @IsEnum(MovieGenre)
-  genre?: string;
+    @IsNotEmpty()
+    @IsOptional()
+    @IsString()
+    @IsEnum(MovieGenre)
+    genre?: string;
 
-  //@IsEnum(MovieGenre)
-  //test: string[];
+    //@IsEnum(MovieGenre)
+    //test: string[];
 
-  @Validate(PasswordValidator)
-  password: string;
+    // @Validate(PasswordValidator)
+    // password: string;
 
 
-  @IsPasswordValid({
-    message: '비밀번호 오류'
-  })  
-  test: string;
+    // @IsPasswordValid({
+    //   message: '비밀번호 오류'
+    // })  
+    // test: string;
 }

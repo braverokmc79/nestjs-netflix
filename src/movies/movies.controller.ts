@@ -19,8 +19,7 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  getMovies() {
-    
+  getMovies() {    
     return this.moviesService.getManyMovies();
   }
 
@@ -41,9 +40,9 @@ export class MoviesController {
   }
 
   @Delete(':id')
-  deleteMovie(@Param('id') id: string) {
+  async  deleteMovie(@Param('id') id: string) {
     console.log(`Deleting movie with ID: ${id}`);
-    this.moviesService.deleteMovie(+id);
+    await this.moviesService.deleteMovie(+id);
 
     return {
       message: `Deleted movie with ID: ${id}`,
