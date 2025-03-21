@@ -1,18 +1,8 @@
 
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import { ChildEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, TableInheritance, UpdateDateColumn, VersionColumn } from 'typeorm';
 
 
-@Entity()
-export class Movie {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  title: string;
-
-  @Column()
-  genre: string;
-
+export class BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
@@ -21,23 +11,43 @@ export class Movie {
 
   @VersionColumn()
   version: number;
-
-  constructor(
-    id?: number,
-    title?: string,
-    genre?: string,
-    createdAt?: Date,
-    updatedAt?: Date,
-    version?: number,
-  ) {
-    if (id) this.id = id;
-    if (title) this.title = title;
-    if (genre) this.genre = genre;
-    if (createdAt) this.createdAt = createdAt;
-    if (updatedAt) this.updatedAt = updatedAt;
-    if (version) this.version = version;
-  }
-
-
 }
+
+// movie / series -> Content
+// runtime (영화 상영시간) / seriesCount (몇개 부작인지)
+
+
+@Entity()
+@TableInheritance({
+  column: {
+    type: 'varchar',
+    name: 'type',
+  },
+})
+export class Content extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column()
+  genre: string;
+}
+
+
+
+@ChildEntity()
+export class Movie extends Content {
+  @Column()
+  runtime: number;
+}
+
+@ChildEntity()
+export class Series extends Content {
+  @Column()
+  seriesCount: number;
+}
+
+
 

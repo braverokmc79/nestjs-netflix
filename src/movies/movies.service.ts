@@ -11,7 +11,7 @@ import { Like, Repository } from 'typeorm';
 export class MoviesService {
 
   constructor(
-    @InjectRepository(Movie)
+    @InjectRepository(Movie)    
     private readonly movieRepository: Repository<Movie>,
   ) { }
 
@@ -23,7 +23,6 @@ export class MoviesService {
       return [await this.movieRepository.find(), await this.movieRepository.count()];
     } 
 
-   
     return [
       await this.movieRepository.find({ where: { title: Like(`%${title}%`) } }),
       await this.movieRepository.count({
