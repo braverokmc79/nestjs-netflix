@@ -1,30 +1,11 @@
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseTable } from "./base.entity";
+import { MovieDetail } from "./movie-detail.entity";
 
-import { ChildEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, TableInheritance, UpdateDateColumn, VersionColumn } from 'typeorm';
-
-
-export class BaseEntity {
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @VersionColumn()
-  version: number;
-}
-
-// movie / series -> Content
-// runtime (영화 상영시간) / seriesCount (몇개 부작인지)
 
 
 @Entity()
-@TableInheritance({
-  column: {
-    type: 'varchar',
-    name: 'type',
-  },
-})
-export class Content extends BaseEntity {
+export class Movie extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -33,21 +14,10 @@ export class Content extends BaseEntity {
 
   @Column()
   genre: string;
+    
+  @OneToOne(() => MovieDetail) 
+  @JoinColumn()    
+  detail: MovieDetail 
+    
+
 }
-
-
-
-@ChildEntity()
-export class Movie extends Content {
-  @Column()
-  runtime: number;
-}
-
-@ChildEntity()
-export class Series extends Content {
-  @Column()
-  seriesCount: number;
-}
-
-
-
