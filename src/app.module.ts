@@ -7,6 +7,7 @@ import * as Joi from 'joi';
 import { Content } from './movies/entity/content.entity';
 import { Movie } from './movies/entity/movie.entity';
 import { MovieDetail } from './movies/entity/movie-detail.entity';
+import { DirectorModule } from './director/director.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { MovieDetail } from './movies/entity/movie-detail.entity';
       inject: [ConfigService],
     }),
     MoviesModule,
+    DirectorModule,
   ],
 })
 export class AppModule {}
