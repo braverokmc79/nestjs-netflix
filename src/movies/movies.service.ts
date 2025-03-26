@@ -51,6 +51,7 @@ export class MoviesService {
     const newMovieDetail = await this.movieDetailRepository.save({
       detail: createMovieDto.detail,
     });
+    
     const newMovie = await this.movieRepository.save({
       title: createMovieDto.title,
       genre: createMovieDto.genre,
@@ -89,13 +90,17 @@ export class MoviesService {
   }
 
   async deleteMovie(id: number) {
-    const movie = await this.movieRepository.findOne({ where: { id } });
+    const movie = await this.movieRepository.findOne({
+      where: { id },
+      relations: ['detail'],
+    });
 
     if (!movie) {
       throw new NotFoundException(`존재하지 않는 ${id} 입니다.`);
     }
 
     await this.movieRepository.delete({ id });
+    await this.movieDetailRepository.delete({ id: movie?.detail?.id });
 
     return id;
   }
