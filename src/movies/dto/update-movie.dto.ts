@@ -79,6 +79,16 @@ export class UpdateMovieDto {
     @IsEnum(MovieGenre)
     genre?: string;
 
+  
+    @IsNotEmpty()
+    @IsOptional()
+    detail?: string;
+
+  
+  
+  
+  
+  
     //@IsEnum(MovieGenre)
     //test: string[];
 
