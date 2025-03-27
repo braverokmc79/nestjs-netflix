@@ -1,5 +1,5 @@
 import { ChildEntity, Column,  Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
-import { BaseTable } from './base.entity';
+import { BaseTable } from '../../common/entity/base.entity';
 
 /**
 2. @TableInheritance가 하는 역할

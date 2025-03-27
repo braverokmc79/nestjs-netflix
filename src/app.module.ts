@@ -8,6 +8,7 @@ import { Content } from './movies/entity/content.entity';
 import { Movie } from './movies/entity/movie.entity';
 import { MovieDetail } from './movies/entity/movie-detail.entity';
 import { DirectorModule } from './director/director.module';
+import { Director } from './director/entity/director.entity';
 
 
 @Module({
@@ -34,7 +35,7 @@ import { DirectorModule } from './director/director.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [
-         Content,Movie,MovieDetail
+         Content,Movie,MovieDetail,Director
         ],
         synchronize: true,
       }),
