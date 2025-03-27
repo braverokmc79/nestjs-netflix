@@ -18,7 +18,7 @@ export class MoviesService {
     private readonly movieDetailRepository: Repository<MovieDetail>,
   ) {}
 
-  async getManyMovies(title?: string): Promise<[Movie[], number]> {
+  async findAll(title?: string): Promise<[Movie[], number]> {
     if (!title) {
       return [
         await this.movieRepository.find(),
@@ -35,7 +35,7 @@ export class MoviesService {
     ];
   }
 
-  async getMovieById(id: number): Promise<Movie> {
+  async findOne(id: number): Promise<Movie> {
     const movie = await this.movieRepository.findOne({
       where: { id },
       relations: ['detail'],
@@ -46,7 +46,7 @@ export class MoviesService {
     return movie;
   }
 
-  async createMovie(createMovieDto: CreateMovieDto) {
+  async create(createMovieDto: CreateMovieDto) {
 
     const newMovieDetail = await this.movieDetailRepository.save({
       detail: createMovieDto.detail,
@@ -61,7 +61,7 @@ export class MoviesService {
     return newMovie;
   }
 
-  async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
+  async update(id: number, updateMovieDto: UpdateMovieDto) {
     const movie = await this.movieRepository.findOne({
       where: { id },
       relations: ['detail'],
@@ -89,7 +89,7 @@ export class MoviesService {
     });
   }
 
-  async deleteMovie(id: number) {
+  async remove(id: number) {
     const movie = await this.movieRepository.findOne({
       where: { id },
       relations: ['detail'],

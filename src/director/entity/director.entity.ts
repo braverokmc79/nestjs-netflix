@@ -1,11 +1,12 @@
+import { BaseTable } from "src/common/entity/base.entity";
 import { Movie } from "src/movies/entity/movie.entity";
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {  Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity()
-export class Director extends BaseEntity {
+export class Director extends BaseTable {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   name: string;
@@ -15,11 +16,7 @@ export class Director extends BaseEntity {
 
   @Column()
   nationality: string;
-    
-  @OneToMany(
-    () => Movie,
-    movie => movie.director,
-  )
-  movies: Movie[]
 
+  @OneToMany(() => Movie, (movie) => movie.director)
+  movies: Movie[];
 }

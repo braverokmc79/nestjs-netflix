@@ -21,29 +21,29 @@ export class MoviesController {
 
   @Get()
   getMovies(@Query('title') title?: string) {
-    return this.moviesService.getManyMovies(title);
+    return this.moviesService.findAll(title);
   }
 
   @Get(':id')
   getMovie(@Param('id') id: string) {
-    return this.moviesService.getMovieById(+id);
+    return this.moviesService.findOne(+id);
   }
 
   @Post()
   postMovie(@Body() body: CreateMovieDto) {
     console.log(`Creating movie with title: ${body.title}`);
-    return this.moviesService.createMovie(body);
+    return this.moviesService.create(body);
   }
 
   @Patch(':id')
   patchMovie(@Param('id') id: string, @Body() body: UpdateMovieDto) {
-    return this.moviesService.updateMovie(+id, body);
+    return this.moviesService.update(+id, body);
   }
 
   @Delete(':id')
   async deleteMovie(@Param('id') id: string) {
     console.log(`Deleting movie with ID: ${id}`);
-    await this.moviesService.deleteMovie(+id);
+    await this.moviesService.remove(+id);
 
     return {
       message: `Deleted movie with ID: ${id}`,
