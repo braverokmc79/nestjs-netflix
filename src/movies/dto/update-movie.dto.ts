@@ -1,15 +1,15 @@
 import {
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
-
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationOptions,
   registerDecorator,
   IsNumber,
+  IsArray,
+  ArrayNotEmpty,
 } from 'class-validator';
 
 
@@ -67,11 +67,16 @@ export class UpdateMovieDto {
   @IsString()
   title?: string;
 
-  @IsNotEmpty()
+
   @IsOptional()
-  @IsString()
-  @IsEnum(MovieGenre)
-  genre?: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({},{
+    each: true
+  })
+  genreIds?:number[];
+
+
 
   @IsNotEmpty()
   @IsOptional()

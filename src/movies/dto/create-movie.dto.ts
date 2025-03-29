@@ -1,15 +1,8 @@
-import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsNumber, IsString,   
- } from 'class-validator';
-import { MovieGenre } from './update-movie.dto';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber} from 'class-validator';
 
 export class CreateMovieDto {
   @IsNotEmpty()
   title: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @IsEnum(MovieGenre)
-  genre: string;
 
   @IsNotEmpty()
   detail: string;
@@ -17,16 +10,12 @@ export class CreateMovieDto {
   @IsNotEmpty()
   directorId: number;
   
-
-  
   @IsArray()
   @ArrayNotEmpty()
   @IsNumber({}, {
     each: true
   })
   genreIds: number[];
-
-
 
   
 }
