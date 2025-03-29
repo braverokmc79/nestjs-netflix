@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Like, Repository, In } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Movie } from './entity/movie.entity';
 import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
 
 
 
@@ -20,13 +21,16 @@ export class MoviesService {
 
     @InjectRepository(Director)
     private readonly directorRepository: Repository<Director>,
+
+    @InjectRepository(Genre)
+    private readonly genreRepository: Repository<Genre>,
   ) {}
 
   async findAll(title?: string): Promise<[Movie[], number]> {
     if (!title) {
       return [
         await this.movieRepository.find({
-          relations: [ 'director'],
+          relations: ['director'],
         }),
         await this.movieRepository.count(),
       ];
@@ -52,22 +56,38 @@ export class MoviesService {
   }
 
   async create(createMovieDto: CreateMovieDto) {
-   const dirctor= await this.directorRepository.findOne({
+    const dirctor = await this.directorRepository.findOne({
       where: { id: createMovieDto.directorId },
-   });
-    
+    });
+
     if (!dirctor) {
-      throw new NotFoundException(`Director with ID ${createMovieDto.directorId} not found`);
+      throw new NotFoundException(
+        `Director with ID ${createMovieDto.directorId} not found`,
+      );
     }
+
+    const genres = await this.genreRepository.find({
+      where: {
+        id: In(createMovieDto.genreIds)
+      }
+    });
+
+    if (genres.length!==createMovieDto.genreIds.length) {
+      throw new NotFoundException(
+        `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
+      );
+    }
+
 
     const newMovie = await this.movieRepository.save({
       title: createMovieDto.title,
-      genre: createMovieDto.genre,
+      genres,
       detail: {
         detail: createMovieDto.detail,
       },
-      director: dirctor
+      director: dirctor,
     });
+
 
     return newMovie;
   }
@@ -99,14 +119,13 @@ export class MoviesService {
     }
 
     // 나머지 속성 업데이트
-    Object.assign(movie,movieRest);
+    Object.assign(movie, movieRest);
     // 정리: update()와 save()의 차이점
     // 메서드	연관 관계(@ManyToOne 등)	부분 업데이트(Partial Update)	변경 감지
     // update()	❌ (무시됨)	✅ (일부 필드만 업데이트 가능)	❌
     // save()	✅ (자동 반영)	✅ (변경된 필드만 업데이트)	✅
     //await this.movieRepository.update({ id }, movieRest);
 
-    
     await this.movieRepository.save(movie);
 
     if (detail) {

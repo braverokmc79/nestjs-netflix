@@ -9,6 +9,7 @@ import {
   ValidatorConstraintInterface,
   ValidationOptions,
   registerDecorator,
+  IsNumber,
 } from 'class-validator';
 
 
@@ -63,6 +64,7 @@ function IsPasswordValid(validationOptions?: ValidationOptions){
 export class UpdateMovieDto {
   @IsNotEmpty()
   @IsOptional()
+  @IsString()
   title?: string;
 
   @IsNotEmpty()
@@ -73,13 +75,13 @@ export class UpdateMovieDto {
 
   @IsNotEmpty()
   @IsOptional()
+  @IsString()
   detail?: string;
 
   @IsNotEmpty()
   @IsOptional()
+  @IsNumber()
   directorId?: number;
-
-
 }
 
 
