@@ -25,7 +25,9 @@ export class MoviesService {
   async findAll(title?: string): Promise<[Movie[], number]> {
     if (!title) {
       return [
-        await this.movieRepository.find(),
+        await this.movieRepository.find({
+          relations: [ 'director'],
+        }),
         await this.movieRepository.count(),
       ];
     }
@@ -64,6 +66,7 @@ export class MoviesService {
       detail: {
         detail: createMovieDto.detail,
       },
+      director: dirctor
     });
 
     return newMovie;

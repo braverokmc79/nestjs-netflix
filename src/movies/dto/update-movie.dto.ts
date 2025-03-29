@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 
 
-enum MovieGenre {
+export enum MovieGenre {
   Drama = 'Drama',
   Action = 'Action',
   Comedy = 'Comedy',
@@ -39,10 +39,12 @@ class PasswordValidator implements ValidatorConstraintInterface {
 
   defaultMessage(validationArguments?: ValidationArguments): string {
     //throw new Error('Method not implemented.');
-    console.log("defaultMessage  ",validationArguments);
+    console.log("defaultMessage  ", validationArguments);
+  
     return "비밀번호 오류";
   }
 }
+
 
 function IsPasswordValid(validationOptions?: ValidationOptions){
   return function(object: object, propertyName: string){
@@ -53,34 +55,30 @@ function IsPasswordValid(validationOptions?: ValidationOptions){
       validator:PasswordValidator,
     });
   }
-
 }
 
 
 
 
 export class UpdateMovieDto {
+  @IsNotEmpty()
+  @IsOptional()
+  title?: string;
 
-    @IsNotEmpty()
-    @IsOptional()
-    title?: string;
+  @IsNotEmpty()
+  @IsOptional()
+  @IsString()
+  @IsEnum(MovieGenre)
+  genre?: string;
 
-    @IsNotEmpty()
-    @IsOptional()
-    @IsString()
-    @IsEnum(MovieGenre)
-    genre?: string;
+  @IsNotEmpty()
+  @IsOptional()
+  detail?: string;
 
-  
-    @IsNotEmpty()
-    @IsOptional()
-    detail?: string;
+  @IsNotEmpty()
+  @IsOptional()
+  directorId?: number;
 
-  
-    
-    @IsNotEmpty()
-    @IsOptional()
-    directorId?: number
 
 }
 
