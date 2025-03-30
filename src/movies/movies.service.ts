@@ -99,8 +99,40 @@ export class MoviesService {
       );
     }
 
+    //✅ createQueryBuilder 사용시
+    // const movieDetail = await this.movieDetailRepository.save({
+    //   detail: createMovieDto.detail
+    // });
+    // const movieDetailId = movieDetail.id; // 반환된 데이터를 안전하게 참조
 
-    const newMovie = await this.movieRepository.save({
+    // const movie=await this.movieRepository.createQueryBuilder()
+    // .insert()
+    // .into(Movie)
+    // .values({
+    //   title: createMovieDto.title,
+    //   detail: {
+    //     id: movieDetailId,       
+    //   },
+    //   director: dirctor,
+    //   genres,
+    // })
+    // .execute();
+
+    // const movieId = movie.identifiers[0].id;
+
+    // await this.movieRepository.createQueryBuilder()
+    // .relation(Movie, 'genres')
+    // .of(movieId)
+    // .add(genres.map(genres => genres.id));
+
+
+    //  return await this.movieRepository.findOne({
+    //   where: { id: movieId },
+    //   relations: ['detail', 'director', 'genres'],
+    // })
+    //✅ createQueryBuilder 사용시 끝
+
+    const movie = await this.movieRepository.save({
       title: createMovieDto.title,
       genres,
       detail: {
@@ -108,9 +140,7 @@ export class MoviesService {
       },
       director: dirctor,
     });
-
-
-    return newMovie;
+    return movie;
   }
 
   async update(id: number, updateMovieDto: UpdateMovieDto) {
@@ -151,26 +181,52 @@ export class MoviesService {
           `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
         );
       }
-      movie.genres = genres;
+
+      //movie.genres = genres;
     }
 
 
     // 나머지 속성 업데이트
-    Object.assign(movie, movieRest);
+    //Object.assign(movie, movieRest);
     // 정리: update()와 save()의 차이점
     // 메서드	연관 관계(@ManyToOne 등)	부분 업데이트(Partial Update)	변경 감지
     // update()	❌ (무시됨)	✅ (일부 필드만 업데이트 가능)	❌
     // save()	✅ (자동 반영)	✅ (변경된 필드만 업데이트)	✅
     //await this.movieRepository.update({ id }, movieRest);
 
-    await this.movieRepository.save(movie);
 
-    if (detail) {
-      await this.movieDetailRepository.update(
-        { id: movie?.detail?.id },
-        { detail },
-      );
+    //=====>⭕⭕⭕⭕⭕
+    //Object.assign(movie, movieRest);
+    //await this.movieRepository.save(movie);
+    // if (detail) {
+    //   await this.movieDetailRepository.update(
+    //     { id: movie?.detail?.id },
+    //     { detail },
+    //   );
+    // }
+    //=====>⭕⭕⭕⭕ createQueryBuilder  로 변경
+    await this.movieRepository.createQueryBuilder()
+    .update(Movie)
+    .set(movieRest)
+    .where('id = :id', { id })
+    .execute();
+
+    if(detail) { 
+      await this.movieDetailRepository.createQueryBuilder()
+      .update(MovieDetail)
+      .set({ detail })
+      .where('id = :id', { id:movie?.detail?.id })
+      .execute();
     }
+
+    if(genreIds){
+      await this.movieRepository.createQueryBuilder()
+      .relation(Movie, 'genres')
+      .of(id)
+      .addAndRemove(genreIds, movie.genres.map((genre) => genre.id));
+    }
+
+
 
     return this.movieRepository.findOne({
       where: { id },
@@ -189,7 +245,13 @@ export class MoviesService {
       throw new NotFoundException(`존재하지 않는 ${id} 입니다.`);
     }
 
-    await this.movieRepository.delete({ id });
+    //await this.movieRepository.delete({ id });
+    //=====>⭕⭕⭕⭕ createQueryBuilder  로 변경
+    await this.movieRepository.createQueryBuilder()
+    .delete()
+    .where('id = :id', { id })
+    .execute();
+
     await this.movieDetailRepository.delete({ id: movie?.detail?.id });
 
     return id;
