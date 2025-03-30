@@ -14,6 +14,7 @@ import {
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -21,7 +22,7 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  getMovies(@Query('title') title?: string) {
+  getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
     return this.moviesService.findAll(title);
   }
 
