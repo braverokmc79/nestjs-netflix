@@ -1,16 +1,18 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidationArguments,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationOptions,
-  registerDecorator,
-  IsNumber,
-  IsArray,
-  ArrayNotEmpty,
+  // IsNotEmpty,
+  // IsOptional,
+  // IsString,
+  // ValidationArguments,
+  // ValidatorConstraint,
+  // ValidatorConstraintInterface,
+  // ValidationOptions,
+  // registerDecorator,
+  // IsNumber,
+  // IsArray,
+  // ArrayNotEmpty,
 } from 'class-validator';
+import { CreateMovieDto } from './create-movie.dto';
 
 
 export enum MovieGenre {
@@ -23,70 +25,72 @@ export enum MovieGenre {
   ScienceFiction = 'Science Fiction',
 }
 
-@ValidatorConstraint({
-  async: true,
-})
-class PasswordValidator implements ValidatorConstraintInterface {
-  validate(value: any,validationArguments?: ValidationArguments,): Promise<boolean> | boolean {
-    console.log(validationArguments);
-    if (typeof value === 'string' || Array.isArray(value)) {
-      return value.length > 4 && value.length < 8;
-    } else {
-      // You could throw an error or return a default value here
-      return false;
-    }
-  }
+// @ValidatorConstraint({
+//   async: true,
+// })
+// class PasswordValidator implements ValidatorConstraintInterface {
+//   validate(value: any,validationArguments?: ValidationArguments,): Promise<boolean> | boolean {
+//     console.log(validationArguments);
+//     if (typeof value === 'string' || Array.isArray(value)) {
+//       return value.length > 4 && value.length < 8;
+//     } else {
+//       // You could throw an error or return a default value here
+//       return false;
+//     }
+//   }
 
 
-  defaultMessage(validationArguments?: ValidationArguments): string {
-    //throw new Error('Method not implemented.');
-    console.log("defaultMessage  ", validationArguments);
+//   defaultMessage(validationArguments?: ValidationArguments): string {
+//     //throw new Error('Method not implemented.');
+//     console.log("defaultMessage  ", validationArguments);
   
-    return "비밀번호 오류";
-  }
-}
+//     return "비밀번호 오류";
+//   }
+// }
 
 
-function IsPasswordValid(validationOptions?: ValidationOptions){
-  return function(object: object, propertyName: string){
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      validator:PasswordValidator,
-    });
-  }
-}
-
-
-
-
-export class UpdateMovieDto {
-  @IsNotEmpty()
-  @IsOptional()
-  @IsString()
-  title?: string;
-
-
-  @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsNumber({},{
-    each: true
-  })
-  genreIds?:number[];
+// function IsPasswordValid(validationOptions?: ValidationOptions){
+//   return function(object: object, propertyName: string){
+//     registerDecorator({
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       options: validationOptions,
+//       validator:PasswordValidator,
+//     });
+//   }
+// }
 
 
 
-  @IsNotEmpty()
-  @IsOptional()
-  @IsString()
-  detail?: string;
 
-  @IsNotEmpty()
-  @IsOptional()
-  @IsNumber()
-  directorId?: number;
+export class UpdateMovieDto  extends PartialType(CreateMovieDto) {
+  // @IsNotEmpty()
+  // @IsOptional()
+  // @IsString()
+  // title?: string;
+
+
+  // @IsOptional()
+  // @IsArray()
+  // @ArrayNotEmpty()
+  // @IsNumber({},{
+  //   each: true
+  // })
+  // genreIds?:number[];
+
+
+
+  // @IsNotEmpty()
+  // @IsOptional()
+  // @IsString()
+  // detail?: string;
+
+  // @IsNotEmpty()
+  // @IsOptional()
+  // @IsNumber()
+  // directorId?: number;
+
+
 }
 
 
