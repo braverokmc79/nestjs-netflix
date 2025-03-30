@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository, In } from 'typeorm';
+import {  Repository, In } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Movie } from './entity/movie.entity';
 import { Director } from 'src/director/entity/director.entity';
@@ -27,33 +27,54 @@ export class MoviesService {
   ) {}
 
   async findAll(title?: string): Promise<[Movie[], number]> {
-    if (!title) {
-      return [
-        await this.movieRepository.find({
-          relations: [ 'director', 'genres'],
-        }),
-        await this.movieRepository.count(),
-      ];
-    }
+      
+    const qb= this.movieRepository.createQueryBuilder("moive")
+     .leftJoinAndSelect("moive.director", "director")
+     .leftJoinAndSelect("moive.genres", "genres");
+    
+     if(title){
+      qb.where("moive.title LIKE :title", { title: `%${title}%` });
+     }    
+     qb.orderBy("moive.id", "DESC");
+     
+    return await qb.getManyAndCount();
 
-    return [
-      await this.movieRepository.find({ where: { title: Like(`%${title}%`) } }),
-      await this.movieRepository.count({
-        where: { title: Like(`%${title}%`) },
-      }),
-    ];
+    // if (!title) {
+    //   return [
+    //     await this.movieRepository.find({
+    //       relations: [ 'director', 'genres'],
+    //     }),
+    //     await this.movieRepository.count(),
+    //   ];
+    // }
+
+    // return [
+    //   await this.movieRepository.find({ where: { title: Like(`%${title}%`) } }),
+    //   await this.movieRepository.count({
+    //     where: { title: Like(`%${title}%`) },
+    //   }),
+    // ];
   }
 
   async findOne(id: number): Promise<Movie> {
-    const movie = await this.movieRepository.findOne({
-      where: { id },
-      relations: ['detail', 'director', 'genres'],
-    });
+    const movie=await this.movieRepository.createQueryBuilder("moive")
+    .leftJoinAndSelect("moive.director", "director")
+    .leftJoinAndSelect("moive.genres", "genres")
+    .leftJoinAndSelect("moive.detail", "detail")
+    .where('moive.id = :id', {id})
+    .getOne();
+
+    // const movie = await this.movieRepository.findOne({
+    //   where: { id },
+    //   relations: ['detail', 'director', 'genres'],
+    // });
     if (!movie) {
       throw new NotFoundException(`Movie with ID ${id} not found`);
     }
     return movie;
   }
+
+
 
   async create(createMovieDto: CreateMovieDto) {
     const dirctor = await this.directorRepository.findOne({
