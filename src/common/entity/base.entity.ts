@@ -1,5 +1,6 @@
 
 
+import { Exclude } from 'class-transformer';
 import {
     CreateDateColumn,
     UpdateDateColumn, VersionColumn
@@ -10,11 +11,14 @@ import {
 
 export class BaseTable {
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @VersionColumn()
+  @Exclude()
   version: number;
 }

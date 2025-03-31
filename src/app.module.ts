@@ -11,7 +11,10 @@ import { DirectorModule } from './director/director.module';
 import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
 import { Genre } from './genre/entity/genre.entity';
+import { AuthModule } from './auth/auth.module';
 
+import { UsersModule } from './users/users.module';
+import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -37,7 +40,7 @@ import { Genre } from './genre/entity/genre.entity';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [
-         Content,Movie,MovieDetail,Director,Genre
+         Content,Movie,MovieDetail,Director,Genre,User,
         ],
         synchronize: true,
       }),
@@ -46,6 +49,8 @@ import { Genre } from './genre/entity/genre.entity';
     MoviesModule,
     DirectorModule,
     GenreModule,
+    AuthModule,
+    UsersModule,
 
   ],
 })
