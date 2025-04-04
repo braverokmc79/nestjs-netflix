@@ -18,7 +18,11 @@ export class User extends BaseTable {
   })
   username: string;
 
-  @Column()
+  @Column(
+    {
+      nullable: true
+    }    
+  )
   name: string;
 
   @Column({

@@ -29,6 +29,7 @@ import { User } from './users/entities/user.entity';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        HASH_ROUNDS: Joi.number().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -39,9 +40,7 @@ import { User } from './users/entities/user.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [
-         Content,Movie,MovieDetail,Director,Genre,User,
-        ],
+        entities: [Content, Movie, MovieDetail, Director, Genre, User],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -51,7 +50,6 @@ import { User } from './users/entities/user.entity';
     GenreModule,
     AuthModule,
     UsersModule,
-
   ],
 })
 export class AppModule {}
