@@ -74,8 +74,7 @@ export class AuthService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  async login(token: string) {
-    const { email, password } = this.parseBasicToken(token);
+  async authenticate(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
 
     if (!user) {
@@ -84,12 +83,24 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.log('ddddddddddddd', password, user.password);
       throw new BadRequestException('잘못된 로그인 정보입니다.');
     }
 
-    const refreshTokenSecret = this.configService.get<string>('REFRESH_TOKEN_SECRET');
-    const accessTokenSecret = this.configService.get<string>('ACCESS_TOKEN_SECRET');
+    return user;
+  }
+
+
+  async login(token: string) {
+    const { email, password } = this.parseBasicToken(token);
+
+    const user = await this.authenticate(email, password);
+
+    const refreshTokenSecret = this.configService.get<string>(
+      'REFRESH_TOKEN_SECRET',
+    );
+    const accessTokenSecret = this.configService.get<string>(
+      'ACCESS_TOKEN_SECRET',
+    );
 
     return {
       refreshToken: await this.jwtService.signAsync(
@@ -117,6 +128,4 @@ export class AuthService {
       ),
     };
   }
-
-
 }
