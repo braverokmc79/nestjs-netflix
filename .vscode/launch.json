@@ -18,5 +18,18 @@
       "stopOnEntry": false,
       "console": "integratedTerminal"
     }
-  ]
+  ],
+
+  
+  "NestJS Controller Method": {
+  "prefix": "nmethod",
+  "body": [
+    "@${1|Get,Post,Put,Delete|}('${2:route}')",
+    "${3:methodName}(@${4|Param,Query,Body,Headers|}('${5:key}') ${6:paramName}: ${7:string}) {",
+    "  return this.${8:service}.${9:methodName}(${6:paramName});",
+    "}"
+  ],
+  "description": "Create a NestJS controller method"
+}
+
 }
