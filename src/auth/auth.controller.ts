@@ -10,16 +10,41 @@ import { JwtAuthGuard } from './strategy/jwt.strategy';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   * 
+   * @param token 
+   * 폼 형식으로 전송
+   * username, password를 각각의 필드로 전송한다.
+   * @returns 
+   */
   @Post('register')
   registerUser(@Headers('authorization') token: string) {
     return this.authService.registerUser(token);
   }
+
+  /**
+    * 폼 형식으로 전송
+   * username, password를 각각의 필드로 전송한다.
+   * @param token 
+   * @returns 
+   */
 
   @Post('login')
   loginUser(@Headers('authorization') token: string) {
     return this.authService.login(token);
   }
 
+
+  /**
+   * 
+   * @param req 
+   JSON 형식으로 요청을 보낼 때는 아래와 같이 요청을 보낸다.
+   {
+      "username":"user1@gmail.com",
+      "password":"1111"
+    }
+   * @returns 
+   */
   //@UseGuards(AuthGuard('local'))
   @UseGuards(LocalAuthGuard)
   @Post('login/passport')
@@ -31,6 +56,11 @@ export class AuthController {
     };
   }
 
+
+  /**
+    Bearer Token 형식으로 요청을 보낼 때는 아래와 같이 요청을 보낸다.
+   Authorization: Bearer {accessToken}
+   */
   @UseGuards(JwtAuthGuard)
   @Get('private')
   private(@Request() req: ExpressRequest) {
