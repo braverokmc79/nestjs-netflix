@@ -9,10 +9,7 @@ import { Response } from 'express';
 @Catch(HttpException)
 export class CustomExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
-    console.error(
-      '필터에서 예외 발생 =================================',
-      exception,
-    );
+    console.error('필터에서 예외 발생 =====>',exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();

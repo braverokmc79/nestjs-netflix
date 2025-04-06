@@ -14,11 +14,11 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     TypeOrmModule.forFeature([User]), 
     JwtModule.register({})    
   ],
+
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
-
 export class AuthModule {}
 
 
