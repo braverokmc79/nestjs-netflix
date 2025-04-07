@@ -4,45 +4,31 @@ import { User } from 'src/users/entities/user.entity';
 import type{ Request as ExpressRequest } from 'express';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard} from './strategy/jwt.strategy';
+import { Public } from './decorator/public.decorator';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /**
-   * 
-   * @param token 
-   * 폼 형식으로 전송
-   * username, password를 각각의 필드로 전송한다.
-   * @returns 
-   */
+  @Public()
   @Post('register')
   registerUser(@Headers('authorization') token: string) {
     return this.authService.registerUser(token);
   }
 
-  /**
-    * 폼 형식으로 전송
-   * username, password를 각각의 필드로 전송한다.
-   * @param token 
-   * @returns 
-   */
-
+  @Public()
   @Post('login')
   loginUser(@Headers('authorization') token: string) {
     return this.authService.login(token);
   }
 
-
   @Post('token/access')
-  async rotateAccessToken(@Request() req) {    
+  async rotateAccessToken(@Request() req) {
     return {
       accessToken: await this.authService.issueToken(req.user, false),
-    }
+    };
   }
-
-
 
   /**
    * 
@@ -65,7 +51,6 @@ export class AuthController {
     };
   }
 
-
   /**
     Bearer Token 형식으로 요청을 보낼 때는 아래와 같이 요청을 보낸다.
    Authorization: Bearer {accessToken}
@@ -76,7 +61,4 @@ export class AuthController {
     const user = req.user as User;
     return user;
   }
-
-
-
 }
