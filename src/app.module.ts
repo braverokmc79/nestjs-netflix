@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
+import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 
 @Module({
   imports: [
@@ -54,4 +55,21 @@ import { User } from './users/entities/user.entity';
     UsersModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // 미들웨어 설정이 필요한 경우 여기에 작성
+    consumer.apply(
+       BearerTokenMiddleware, // JWT 토큰 검증 미들웨어
+    ).exclude({
+      path: 'auth/login', 
+      method: RequestMethod.POST,
+    }
+    ,{
+      path: 'auth/register',
+      method: RequestMethod.POST
+    }
+  ).forRoutes('*');
+
+
+  }
+}
