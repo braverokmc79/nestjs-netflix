@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { NextFunction, Request, Response } from "express";
 import { envVariableKeys } from "src/common/const/env.const";
+import { UserPayload } from "../types/user-payload.interface";
 
 @Injectable()
 export class BearerTokenMiddleware implements NestMiddleware {
@@ -24,7 +25,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
         const token = this.validateBearerToken(authHeader);
 
         try {          
-            const decodedPayload = this.jwtService.decode(token);
+            const decodedPayload: UserPayload = this.jwtService.decode(token);
 
             if(decodedPayload.type !== 'refresh' && decodedPayload.type !== 'access'){
                 throw new UnauthorizedException('잘못된 토큰입니다!');
@@ -34,7 +35,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
                 envVariableKeys.refreshTokenSecret :
                 envVariableKeys.accessTokenSecret;
 
-            const payload = await this.jwtService.verifyAsync(token, {
+            const payload : UserPayload = await this.jwtService.verifyAsync(token, {
                 secret: this.configService.get<string>(
                     secretKey,
                 ),
@@ -42,7 +43,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
 
             req.user = payload;
             next();
-        } catch (e) {
+        } catch (e ) {
             if(e.name === 'TokenExpiredError'){
                 throw new UnauthorizedException('토큰이 만료됐습니다.');
             }

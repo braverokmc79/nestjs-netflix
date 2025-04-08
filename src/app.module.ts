@@ -18,6 +18,7 @@ import { User } from './users/entities/user.entity';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { RbacGuard } from './auth/guard/rbac.guard';
 
 @Module({
   imports: [
@@ -59,7 +60,11 @@ import { AuthGuard } from './auth/guard/auth.guard';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AuthGuard
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RbacGuard
     }
   ],
 })
