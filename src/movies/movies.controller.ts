@@ -15,6 +15,7 @@ import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
+import { Public } from 'src/auth/decorator/public.decorator';
 
 
 @Controller('movies')
@@ -23,6 +24,7 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
+  @Public()
   getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
     return this.moviesService.findAll(title);
   }

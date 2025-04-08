@@ -48,7 +48,10 @@ export class BearerTokenMiddleware implements NestMiddleware {
             }
 
             // 그 외 에러도 Nest에 맡김            
-            throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+            //throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+            //===>🎈@Public() 경우에 토큰검증을 하기 때문에 오류 따라서,TokenExpiredError 가 아닌 이상
+            // ====> gard에서 처리하기로 함 :
+            next();
         }
     }
 
