@@ -88,8 +88,9 @@ export class AuthService {
 
 
 
-  async registerUser(rowToken: string) {
+  async registerUser(rowToken: string, body?:{username: string, name: string}) {
     const { email, password } = this.parseBasicToken(rowToken);
+    
     const user = await this.usersRepository.findOne({ where: { email } });
     if (user) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
@@ -98,7 +99,8 @@ export class AuthService {
     const hashRounds = this.configService.get<number>('HASH_ROUNDS') || 10;
     const hashedPassword = await bcrypt.hash(password, hashRounds);
     await this.usersRepository.save({
-      username: email,
+      username: body?.username ? body.username : email,
+      name: body?.name ? body.name : email,
       email,
       password: hashedPassword,
     });
@@ -110,12 +112,12 @@ export class AuthService {
   async authenticate(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
-      throw new BadRequestException('잘못된 로그인 정보입니다.');
+      throw new BadRequestException('잘못된 로그인 정보입니다.1');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new BadRequestException('잘못된 로그인 정보입니다.');
+      throw new BadRequestException('잘못된 로그인 정보입니다.2');
     }
     return user;
   }

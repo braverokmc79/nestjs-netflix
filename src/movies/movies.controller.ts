@@ -14,10 +14,10 @@ import {
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
-import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/users/entities/user.entity';
+import { GetMoviesDto } from './dto/get-movies.dto';
 
 
 @Controller('movies')
@@ -27,9 +27,13 @@ export class MoviesController {
 
   @Get()
   @Public()
-  getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
-    return this.moviesService.findAll(title);
+  getMovies(@Query() dto: GetMoviesDto   ) {
+    console.log('⭕✅Fetching movies with pagination: ', dto.page);
+
+    return this.moviesService.findAll(dto);
   }
+
+
 
   @Get(':id')
   @Public()

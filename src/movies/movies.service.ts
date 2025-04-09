@@ -7,6 +7,8 @@ import { MovieDetail } from './entity/movie-detail.entity';
 import { Movie } from './entity/movie.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
+import { GetMoviesDto } from './dto/get-movies.dto';
+import { CommonService } from 'src/common/common.service';
 
 
 
@@ -26,10 +28,15 @@ export class MoviesService {
     private readonly genreRepository: Repository<Genre>,
 
     private readonly dataSource: DataSource,
+
+    private readonly commonService: CommonService
   ) {}
 
-  async findAll(title?: string): Promise<[Movie[], number]> {
-      
+
+
+  async findAll(dto: GetMoviesDto){
+    const {title, take, page}  = dto;
+
     const qb= this.movieRepository.createQueryBuilder("moive")
      .leftJoinAndSelect("moive.director", "director")
      .leftJoinAndSelect("moive.genres", "genres");
@@ -37,9 +44,24 @@ export class MoviesService {
      if(title){
       qb.where("moive.title LIKE :title", { title: `%${title}%` });
      }    
+    
+     // 페이지네이션 처리      
+     this.commonService.applyPagePaginationParamsToQb(qb, dto);
      qb.orderBy("moive.id", "DESC");
      
-    return await qb.getManyAndCount();
+     const movies = await qb.getManyAndCount();
+
+     const pagination = {
+      page: page || 1,
+      take: take || 10,
+      total: movies[1],
+      lastPage: Math.ceil(movies[1] / (take || 10)),
+    };
+     // const [results, total] = await this.movieRepository.findAndCount({
+    return {
+      movies: movies[0],
+      pagination,
+    }
 
     // if (!title) {
     //   return [
@@ -57,6 +79,8 @@ export class MoviesService {
     //   }),
     // ];
   }
+
+
 
   async findOne(id: number): Promise<Movie> {
     const movie=await this.movieRepository.createQueryBuilder("moive")

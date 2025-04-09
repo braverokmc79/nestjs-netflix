@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Get, Headers, Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, Headers, Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entities/user.entity';
 import type{ Request as ExpressRequest } from 'express';
@@ -13,20 +13,25 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  registerUser(@Headers('authorization') token: string) {
-    return this.authService.registerUser(token);
+  registerUser(@Headers('authorization') token: string,
+    @Body() body :{username: string, name: string}
+  ) {
+    console.log('body', body);
+    return this.authService.registerUser(token, body);
   }
 
   @Public()
   @Post('login')
   loginUser(@Headers('authorization') token: string) {
+    console.log('*** token', token);
     return this.authService.login(token);
   }
 
   @Post('token/access')
-  async rotateAccessToken(@Request() req) {
-    return {
-      accessToken: await this.authService.issueToken(req.user, false),
+  async rotateAccessToken(@Request() req : ExpressRequest) {
+    const user = req.user as User;
+    return {      
+      accessToken: await this.authService.issueToken(user, false),
     };
   }
 
