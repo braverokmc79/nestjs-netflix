@@ -35,49 +35,26 @@ export class MoviesService {
 
 
   async findAll(dto: GetMoviesDto){
-    const {title, take, page}  = dto;
+    const { title } = dto;
 
-    const qb= this.movieRepository.createQueryBuilder("moive")
-     .leftJoinAndSelect("moive.director", "director")
-     .leftJoinAndSelect("moive.genres", "genres");
-    
-     if(title){
-      qb.where("moive.title LIKE :title", { title: `%${title}%` });
-     }    
-    
-     // 페이지네이션 처리      
-     this.commonService.applyPagePaginationParamsToQb(qb, dto);
-     qb.orderBy("moive.id", "DESC");
-     
-     const movies = await qb.getManyAndCount();
+    const qb = this.movieRepository
+      .createQueryBuilder('moive')
+      .leftJoinAndSelect('moive.director', 'director')
+      .leftJoinAndSelect('moive.genres', 'genres');
 
-     const pagination = {
-      page: page || 1,
-      take: take || 10,
-      total: movies[1],
-      lastPage: Math.ceil(movies[1] / (take || 10)),
-    };
-     // const [results, total] = await this.movieRepository.findAndCount({
-    return {
-      movies: movies[0],
-      pagination,
+    if (title) {
+      qb.where('moive.title LIKE :title', { title: `%${title}%` });
     }
 
-    // if (!title) {
-    //   return [
-    //     await this.movieRepository.find({
-    //       relations: [ 'director', 'genres'],
-    //     }),
-    //     await this.movieRepository.count(),
-    //   ];
-    // }
+    //qb.orderBy('moive.id', 'DESC');
 
-    // return [
-    //   await this.movieRepository.find({ where: { title: Like(`%${title}%`) } }),
-    //   await this.movieRepository.count({
-    //     where: { title: Like(`%${title}%`) },
-    //   }),
-    // ];
+    //1. 페이지 기반 페이지네이션 (Page-based Pagination)
+    //return await this.commonService.applyPagePaginationParamsToQb(qb, dto);
+
+    //2. Cursors pagination (Cursor-based Pagination)
+    return await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
+
+
   }
 
 

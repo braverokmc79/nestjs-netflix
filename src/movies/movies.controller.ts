@@ -28,8 +28,6 @@ export class MoviesController {
   @Get()
   @Public()
   getMovies(@Query() dto: GetMoviesDto   ) {
-    console.log('⭕✅Fetching movies with pagination: ', dto.page);
-
     return this.moviesService.findAll(dto);
   }
 
