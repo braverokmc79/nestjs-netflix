@@ -38,36 +38,57 @@ export class CommonService {
     }
   }
 
-  async applyCursorPaginationParamsToQb<T extends object>(
-    qb: SelectQueryBuilder<T>,
-    dto: CursorPaginationDto,
-    keyName: string = 'items',
-  ) {
+  async applyCursorPaginationParamsToQb<T extends object>(qb: SelectQueryBuilder<T>,dto: CursorPaginationDto, keyName: string = 'items',) {
     //.Cursors pagination 처리
-    const { id, order, take } = dto;
+    const { cursor, order, take } = dto;
 
-    if (id) {
-      const direction = order === 'ASC' ? '>' : '<';
-      /// order -> ASC :movie.id > :id
-      /// :id
-      qb.where(`${qb.alias}.id ${direction} :id`, { id });
+
+    if (cursor) {
+      
     }
 
-    qb.orderBy(`${qb.alias}.id`, order);
+    for(let i = 0; i < order.length; i++) {
+      const [column, direction] = order[i].split('_');
+
+      if (direction !== 'ASC' && direction !== 'DESC') {
+        throw new Error(`Order 는 ASC, DESC 으로 입력해주세요.: ${direction}`);
+      }
+
+      // ❤ qb.alias 는 현재 테이블명
+      if (i === 0) {
+        qb.orderBy(`${qb.alias}.${column}`, direction);        
+      } else {
+        qb.addOrderBy(`${qb.alias}.${column}`, direction);
+      }
+    }
+      
     qb.take(take);
 
-    const items = await qb.getManyAndCount();
+    // if (id) {
+    //   const direction = order === 'ASC' ? '>' : '<';
+    //   /// order -> ASC :movie.id > :id
+    //   /// :id
+    //   qb.where(`${qb.alias}.id ${direction} :id`, { id });
+    // }
 
-    const pagination = {
-      cursor: id,
-      order: order,
-      take: take,
-      total: items[1],
-    };
+    // qb.orderBy(`${qb.alias}.id`, order);
+    // qb.take(take);
 
-    return {
-      [keyName]: items[0],
-      pagination,
-    };
+    // const items = await qb.getManyAndCount();
+
+    // const pagination = {
+    //   cursor: id,
+    //   order: order,
+    //   take: take,
+    //   total: items[1],
+    // };
+
+    // return {
+    //   [keyName]: items[0],
+    //   pagination,
+    // };
+
   }
+
+
 }
