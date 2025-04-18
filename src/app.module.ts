@@ -16,9 +16,10 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RbacGuard } from './auth/guard/rbac.guard';
+import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 
 @Module({
   imports: [
@@ -64,25 +65,31 @@ import { RbacGuard } from './auth/guard/rbac.guard';
     },
     {
       provide: APP_GUARD,
-      useClass: RbacGuard
-    }
+      useClass: RbacGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTimeInterceptor,
+    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // 미들웨어 설정이 필요한 경우 여기에 작성
-    consumer.apply(
-       BearerTokenMiddleware, // JWT 토큰 검증 미들웨어
-    ).exclude({
-      path: 'auth/login', 
-      method: RequestMethod.POST,
-    }
-    ,{
-      path: 'auth/register',
-      method: RequestMethod.POST
-    }
-  ).forRoutes('*');
-
-
+    consumer
+      .apply(
+        BearerTokenMiddleware, // JWT 토큰 검증 미들웨어
+      )
+      .exclude(
+        {
+          path: 'auth/login',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/register',
+          method: RequestMethod.POST,
+        },
+      )
+      .forRoutes('*');
   }
 }
