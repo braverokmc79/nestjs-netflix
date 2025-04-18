@@ -47,27 +47,23 @@ if (cursor) {
 
 
 export class CursorPaginationDto {
-  
-  @IsInt()
+
+  @IsString()
   @IsOptional()
   // id_52, likeCount_52
   cursor?: string;
 
-
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-    // id_ASC, id_DESC
-    //[id_DESC, likeCount_ASC]
-  order: string[] = [];
-
+  // id_ASC id_DESC
+  // [id_DESC, likeCount_DESC]
+  order: string[] = ['id_DESC'];
 
   @IsInt()
   @IsOptional()
   take: number = 5;
-
-
-
+  
 }
 
 /**

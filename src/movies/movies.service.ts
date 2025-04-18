@@ -54,7 +54,6 @@ export class MoviesService {
     //2. Cursors pagination (Cursor-based Pagination)
     return await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
 
-
   }
 
 
