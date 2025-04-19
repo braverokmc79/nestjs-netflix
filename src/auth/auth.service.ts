@@ -136,7 +136,7 @@ export class AuthService {
       },
       {
         secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
-        expiresIn: isRefreshToken ? '14d' : 300,
+        expiresIn: isRefreshToken ? '14d' : 30000000,
       },
     );
   }

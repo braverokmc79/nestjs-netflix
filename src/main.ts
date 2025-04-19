@@ -1,7 +1,10 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomExceptionFilter } from '../common/custom-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { TransactionInterceptor } from './common/interceptor/transaction.interceptor';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +21,12 @@ async function bootstrap() {
     }),
   );
 
+
+  const reflector = app.get(Reflector);
+  const dataSource = app.get(DataSource);
+  app.useGlobalInterceptors(new TransactionInterceptor(dataSource, reflector));
+
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap().catch((err) => {

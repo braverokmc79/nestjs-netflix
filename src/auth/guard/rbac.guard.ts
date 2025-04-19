@@ -26,7 +26,7 @@ export class RbacGuard implements CanActivate {
         if(!user){        
             return false;
         }
-
+        console.log('***** user.role', user.role, 'role', role);
         //높은 권한을 가진 사용자가 낮은 권한을 가진 사용자를 접근할 수 있도록 한다.
         // ex)
         // 0 admin, 
