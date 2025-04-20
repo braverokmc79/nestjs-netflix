@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { CustomExceptionFilter } from '../common/custom-exception.filter';
+import { CustomExceptionFilter } from './common/filter/custom-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptor/transaction.interceptor';

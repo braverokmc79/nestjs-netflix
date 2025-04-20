@@ -96,22 +96,27 @@ export class MoviesService {
       },
     });
 
-    if (genres.length !== createMovieDto.genreIds.length) {
-      throw new NotFoundException(
-        `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
-      );
-    }
+    // if (genres.length !== createMovieDto.genreIds.length) {
+    //   throw new NotFoundException(
+    //     `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
+    //   );
+    // }
 
-    const movieTitleCheck = await qr.manager.findOne(Movie, {
-      where: { title: createMovieDto.title },
-    });
-    if (movieTitleCheck) {
-      throw new ConflictException(
-        `동일한 제목의 영화가 존재합니다. title => ${movieTitleCheck.title}`,
-      );
-    }
+    // const movieTitleCheck = await qr.manager.findOne(Movie, {
+    //   where: { title: createMovieDto.title },
+    // });
+    // if (movieTitleCheck) {
+    //   throw new ConflictException(
+    //     `동일한 제목의 영화가 존재합니다. title => ${movieTitleCheck.title}`,
+    //   );
+    // }
 
-    const movie = await qr.manager.save({
+
+    console.log("저장하기 전", createMovieDto);
+
+
+    
+    const movie = await qr.manager.save(Movie,{
       title: createMovieDto.title,
       genres,
       detail: {
