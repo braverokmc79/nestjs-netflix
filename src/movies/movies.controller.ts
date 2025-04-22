@@ -12,6 +12,8 @@ import {
   ParseIntPipe,
   Request,
   UploadedFile,
+  UploadedFiles,
+  BadRequestException,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -22,7 +24,10 @@ import { Role } from 'src/users/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { QueryRunner } from 'typeorm';
+import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';
+import { MovieFilePipe } from './pipe/movie-file.pipe';
 
 
 
@@ -48,13 +53,28 @@ export class MoviesController {
   @Post()
   @RBAC(Role.admin)
   //@UseInterceptors(TransactionInterceptor)
-  @UseInterceptors(FileInterceptor('movie'))
-  postMovie(@Body() body: CreateMovieDto, @Request() req,
-    @UploadedFile() file: Express.Multer.File
+  @UseInterceptors(
+    MovieUploadInterceptor({
+      maxSize: 20,
+    }),
+  )
+  postMovie(
+    @Body() body: CreateMovieDto,
+    @Request() req,
+    @UploadedFiles(
+      // new MovieFilePipe({
+      //   maxSize: 10,
+      //   mimetype: 'video/mp4',
+      // }),
+    )
+    file?: {
+      movie?: Express.Multer.File[];
+      poster?: Express.Multer.File[];
+    },
   ) {
     console.log(`Creating movie with file:  `, file);
     console.log(`Creating movie with title: ${body.title} `);
-    return this.moviesService.create(body, req.queryRunner);
+    return this.moviesService.create(body, req.queryRunner as QueryRunner);
   }
 
   @Patch(':id')
