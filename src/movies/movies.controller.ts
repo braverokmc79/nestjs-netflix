@@ -67,14 +67,21 @@ export class MoviesController {
       //   mimetype: 'video/mp4',
       // }),
     )
-    file?: {
+    file: {
       movie?: Express.Multer.File[];
       poster?: Express.Multer.File[];
     },
+    //movie: Express.Multer.File,
   ) {
-    console.log(`Creating movie with file:  `, file);
-    console.log(`Creating movie with title: ${body.title} `);
-    return this.moviesService.create(body, req.queryRunner as QueryRunner);
+
+    const movieFile = file?.movie?.[0];
+    if (!movieFile) {
+      throw new BadRequestException('movie 파일이 업로드되지 않았습니다.');
+    }
+    const posterFile = file?.poster?.[0];
+
+
+    return this.moviesService.create(body, movieFile.filename, posterFile?.filename,  req.queryRunner as QueryRunner);
   }
 
   @Patch(':id')

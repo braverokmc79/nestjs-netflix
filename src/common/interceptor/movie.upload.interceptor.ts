@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { extname, join } from 'path';
 
 
-
 /**
  * 
 FileFieldsInterceptor()는 NestJS에서 이미 구현되어 있는 인터셉터 팩토리 함수이기 때문에,
@@ -30,20 +29,31 @@ export function MovieUploadInterceptor({ maxSize=200 }: { maxSize: number }) {
       { name: 'poster', maxCount: 2 },
     ],
     {
+     
+      //
       storage: diskStorage({
-        destination: (req, file, cb) => {
-          // 경로 설정: /public/movie 또는 /public/poster
+        destination: (
+          req: Express.Request,
+          file: Express.Multer.File,
+          cb: (error: Error | null, destination: string) => void,
+        ) => {
           const isMovie = file.fieldname === 'movie';
           const folder = isMovie ? 'movie' : 'poster';
-          
+      
           cb(null, join(process.cwd(), 'public', folder));
         },
-        filename: (req, file, cb) => {
+        filename: (
+          req: Express.Request,
+          file: Express.Multer.File,
+          cb: (error: Error | null, filename: string) => void,
+        ) => {
           const uniqueSuffix = `${uuidv4()}_${Date.now()}`;
           const ext = extname(file.originalname); // .mp4, .jpg 등
           cb(null, `${uniqueSuffix}${ext}`);
         },
       }),
+          
+      
       limits: {
         fileSize: 1024 * 1024 * maxSize, // 200MB
       },
@@ -53,6 +63,7 @@ export function MovieUploadInterceptor({ maxSize=200 }: { maxSize: number }) {
           'image/png',
           'image/jpg',
           'image/gif',
+          'image/webp',
           'video/mp4',
         ];
 

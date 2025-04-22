@@ -1,4 +1,4 @@
-import {  ConflictException, Injectable, NotFoundException} from '@nestjs/common';
+import {   ConflictException, Injectable, NotFoundException} from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,7 +9,8 @@ import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CommonService } from 'src/common/common.service';
-
+import {join} from 'path';
+import * as path from 'path';
 
 @Injectable()
 export class MoviesService {
@@ -77,9 +78,7 @@ export class MoviesService {
     return movie;
   }
 
-  async create(createMovieDto: CreateMovieDto, qr: QueryRunner) {
-    
-
+  async create(createMovieDto: CreateMovieDto, movieFileName:string,   posterFileName:string|undefined, qr: QueryRunner, ) {
    const dirctor = await qr.manager.findOne(Director, {
      where: { id: createMovieDto.directorId },
    });
@@ -96,23 +95,30 @@ export class MoviesService {
       },
     });
 
-    // if (genres.length !== createMovieDto.genreIds.length) {
-    //   throw new NotFoundException(
-    //     `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
-    //   );
-    // }
+    if (genres.length !== createMovieDto.genreIds.length) {
+      throw new NotFoundException(
+        `존재하지 않는 장르가 있습니다. 존재하는 ids => ${genres.map((genre) => genre.id).join(', ')}`,
+      );
+    }
 
-    // const movieTitleCheck = await qr.manager.findOne(Movie, {
-    //   where: { title: createMovieDto.title },
-    // });
-    // if (movieTitleCheck) {
-    //   throw new ConflictException(
-    //     `동일한 제목의 영화가 존재합니다. title => ${movieTitleCheck.title}`,
-    //   );
-    // }
+    const movieTitleCheck = await qr.manager.findOne(Movie, {
+      where: { title: createMovieDto.title },
+    });
+    if (movieTitleCheck) {
+      throw new ConflictException(
+        `동일한 제목의 영화가 존재합니다. title => ${movieTitleCheck.title}`,
+      );
+    }
 
 
-    console.log("저장하기 전", createMovieDto);
+  
+   const movieFilePath = path.posix.join('public', 'movie', movieFileName);
+
+    let posterFilePath="";    
+    if(posterFileName){
+     posterFilePath = path.posix.join('public', 'poster', posterFileName);
+    }
+    
 
 
     
@@ -122,13 +128,11 @@ export class MoviesService {
       detail: {
         detail: createMovieDto.detail,
       },
+      movieFilePath:movieFilePath,
+      posterFilePath:posterFilePath,
       director: dirctor,
     });
 
-
-    //  throw new NotFoundException(
-    //    `Director with ID ${createMovieDto.directorId} not found`,
-    //  );
 
      return movie;
 
