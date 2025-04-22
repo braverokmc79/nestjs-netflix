@@ -11,6 +11,7 @@ import {
   Query,
   ParseIntPipe,
   Request,
+  UploadedFile,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -20,6 +21,8 @@ import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/users/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
+import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 
@@ -44,8 +47,13 @@ export class MoviesController {
 
   @Post()
   @RBAC(Role.admin)
-  postMovie(@Body() body: CreateMovieDto, @Request() req) {
-    console.log(`Creating movie with title: ${body.title}`);
+  //@UseInterceptors(TransactionInterceptor)
+  @UseInterceptors(FileInterceptor('movie'))
+  postMovie(@Body() body: CreateMovieDto, @Request() req,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    console.log(`Creating movie with file:  `, file);
+    console.log(`Creating movie with title: ${body.title} `);
     return this.moviesService.create(body, req.queryRunner);
   }
 
