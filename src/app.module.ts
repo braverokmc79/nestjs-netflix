@@ -53,11 +53,21 @@ import { MovieUserLike } from './movies/entity/movie-user-like.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Content, Movie, MovieDetail,MovieUserLike, Director, Genre, User],
+        entities: [
+          Content,
+          Movie,
+          MovieDetail,
+          MovieUserLike,
+          Director,
+          Genre,
+          User,
+          
+        ],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
+   
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public/',

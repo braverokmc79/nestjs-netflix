@@ -1,4 +1,4 @@
-import {   ConflictException, Injectable, NotFoundException} from '@nestjs/common';
+import {   BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,10 +12,12 @@ import { CommonService } from 'src/common/common.service';
 import {join} from 'path';
 import * as path from 'path';
 import {rename} from 'fs/promises';
+import { MovieUserLike } from './entity/movie-user-like.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class MoviesService {
-  private readonly queryRunner: QueryRunner;
+  //private readonly queryRunner: QueryRunner;
 
   constructor(
     @InjectRepository(Movie)
@@ -30,14 +32,16 @@ export class MoviesService {
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
 
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
+    @InjectRepository(MovieUserLike)
+    private readonly movieUserLikeRepository: Repository<MovieUserLike>,
+
     private readonly dataSource: DataSource,
 
     private readonly commonService: CommonService,
-
-
-  ) {
-    
-  }
+  ) {}
 
   async findAll(dto: GetMoviesDto) {
     const { title } = dto;
@@ -80,10 +84,14 @@ export class MoviesService {
     return movie;
   }
 
-  async create(createMovieDto: CreateMovieDto, userId:number   , qr: QueryRunner ) {
-   const dirctor = await qr.manager.findOne(Director, {
-     where: { id: createMovieDto.directorId },
-   });
+  async create(
+    createMovieDto: CreateMovieDto,
+    userId: number,
+    qr: QueryRunner,
+  ) {
+    const dirctor = await qr.manager.findOne(Director, {
+      where: { id: createMovieDto.directorId },
+    });
 
     if (!dirctor) {
       throw new NotFoundException(
@@ -112,36 +120,37 @@ export class MoviesService {
       );
     }
 
+    //   let posterFilePath="";
+    //   if(posterFileName){
+    //    posterFilePath = path.posix.join('public', 'poster', posterFileName);
+    //   }
 
-  //   let posterFilePath="";    
-  //   if(posterFileName){
-  //    posterFilePath = path.posix.join('public', 'poster', posterFileName);
-  //   }
-    
-    
-    const movie = await qr.manager.save(Movie,{
+    const movie = await qr.manager.save(Movie, {
       title: createMovieDto.title,
       genres,
       detail: {
         detail: createMovieDto.detail,
       },
-      movieFilePath:path.posix.join('public', 'movie', createMovieDto.movieFileName),
+      movieFilePath: path.posix.join(
+        'public',
+        'movie',
+        createMovieDto.movieFileName,
+      ),
       //posterFilePath:posterFilePath,
       director: dirctor,
       creator: {
-        id: userId
-      }
+        id: userId,
+      },
     });
 
     const movieFolder = join('public', 'movie');
     const tempFolder = join('public', 'temp');
     await rename(
       join(process.cwd(), tempFolder, createMovieDto.movieFileName),
-      join(process.cwd(), movieFolder, createMovieDto.movieFileName),    
+      join(process.cwd(), movieFolder, createMovieDto.movieFileName),
     );
 
-
-     return movie;
+    return movie;
 
     //✅ createQueryBuilder 사용시
     // const movieDetail = await this.movieDetailRepository.save({
@@ -304,5 +313,75 @@ export class MoviesService {
     await this.movieDetailRepository.delete({ id: movie?.detail?.id });
 
     return id;
+  }
+
+  async toggleMovieLike(movieId: number, userId: number, isLike: boolean) {
+    const movie = await this.movieRepository.findOne({
+      where: { id: movieId },
+    });
+
+    if (!movie) {
+      throw new BadRequestException('존재하지 않는 영화 입니다.');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('존재하지 않는 사용자 입니다.');
+    }
+
+    const likeRecord =await this.movieUserLikeRepository.createQueryBuilder('mul')
+    .leftJoinAndSelect('mul.movie', 'movie')
+    .leftJoinAndSelect('mul.user', 'user')
+    .where('movie.id = :movieId', { movieId })
+    .andWhere('user.id = :userId', { userId })
+    .getOne();
+
+
+
+    if (likeRecord) {
+      
+      if (isLike === likeRecord.isLike) {
+        await this.movieUserLikeRepository.delete({
+          movie,
+          user,
+        });
+
+      } else {
+        await this.movieUserLikeRepository.update(
+          {
+            movie,
+            user,
+          },
+          {
+            isLike,
+          },
+        )
+      }
+
+    } else {
+      await this.movieUserLikeRepository.save({
+        movie,
+        user,
+        isLike,
+      });
+    }
+
+
+    const result = await this.movieUserLikeRepository
+      .createQueryBuilder('mul')
+      .leftJoinAndSelect('mul.movie', 'movie')
+      .leftJoinAndSelect('mul.user', 'user')
+      .where('movie.id = :movieId', { movieId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+    return {
+      isLike: result && result.isLike
+    }
   }
 }

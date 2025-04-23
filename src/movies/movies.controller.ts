@@ -53,27 +53,25 @@ export class MoviesController {
   //@UseInterceptors(TransactionInterceptor)
   postMovie(
     @Body() body: CreateMovieDto,
-    @QueryRunner() queryRunner:QR,
-    @UserId() userId: number    
-  ) {    
-    
-    return this.moviesService.create(body, userId, queryRunner );
+    @QueryRunner() queryRunner: QR,
+    @UserId() userId: number,
+  ) {
+    return this.moviesService.create(body, userId, queryRunner);
   }
 
-
-
-
-  @Post("upload")
+  @Post('upload')
   @RBAC(Role.admin)
   //@UseInterceptors(TransactionInterceptor)
-  @UseInterceptors(MovieUploadInterceptor({maxSize: 20,}),)
-  postMovie2(@Body() body: CreateMovieDto,@Request() req,@UploadedFiles(
-      // new MovieFilePipe({
-      //   maxSize: 10,
-      //   mimetype: 'video/mp4',
-      // }),
-    )
-    file: {
+  @UseInterceptors(MovieUploadInterceptor({ maxSize: 20 }))
+  postMovie2(
+    @Body() body: CreateMovieDto,
+    @Request() req,
+    @UploadedFiles()
+    file // new MovieFilePipe({
+    //   maxSize: 10,
+    //   mimetype: 'video/mp4',
+    // }),
+    : {
       movie?: Express.Multer.File[];
       poster?: Express.Multer.File[];
     },
@@ -83,13 +81,11 @@ export class MoviesController {
     if (!movieFile) {
       throw new BadRequestException('movie 파일이 업로드되지 않았습니다.');
     }
-    const posterFile = file?.poster?.[0];
+    // const posterFile = file?.poster?.[0];
     //movieFile.filename, posterFile?.filename,
     //return this.moviesService.create(body,req.queryRunner as QueryRunner);
-    return  null;
+    return null;
   }
-
-
 
   @Patch(':id')
   @RBAC(Role.admin)
@@ -111,4 +107,23 @@ export class MoviesController {
       statusCode: 201,
     };
   }
+
+  @Post(':id/like')
+   createMovieLike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ) {
+    
+    return  this.moviesService.toggleMovieLike(movieId, userId, true);
+  }
+
+
+  @Post(':id/dislike')
+   createMovieDisLike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ) {
+    return  this.moviesService.toggleMovieLike(movieId, userId, false);
+  }
+
 }
