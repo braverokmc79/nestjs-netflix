@@ -23,7 +23,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
         }
 
         const token = this.validateBearerToken(authHeader);
-
+       // console.log('🎈🎈🎈🎈BearerTokenMiddleware called! token', token);
         try {          
             const decodedPayload: UserPayload = this.jwtService.decode(token);
 

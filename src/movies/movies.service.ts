@@ -15,6 +15,7 @@ import {rename} from 'fs/promises';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { User } from 'src/users/entities/user.entity';
 
+
 @Injectable()
 export class MoviesService {
   //private readonly queryRunner: QueryRunner;
@@ -43,25 +44,65 @@ export class MoviesService {
     private readonly commonService: CommonService,
   ) {}
 
-  async findAll(dto: GetMoviesDto) {
+  // select * from movie_user_like mul 
+	// where mul."movieId" in (2,3, 4,5, 6,7)
+	// and mul."userId" =2;
+
+  async findAll(dto: GetMoviesDto, userId?: number) {
     const { title } = dto;
 
     const qb = this.movieRepository
       .createQueryBuilder('moive')
       .leftJoinAndSelect('moive.director', 'director')
-      .leftJoinAndSelect('moive.genres', 'genres');
+      .leftJoinAndSelect('moive.genres', 'genres')
+      .loadRelationCountAndMap('moive.likeCount', 'moive.likeUsers');    // 자동으로 카운팅됨
 
     if (title) {
       qb.where('moive.title LIKE :title', { title: `%${title}%` });
     }
 
+    let result = await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
+
+    if(userId&& result?.items){
+      
+      const items: Movie[]=result.items as Movie[];
+      if(items.length===0) return result;
+
+      const movieIds=items.map((movie: Movie) => movie.id);
+      const likedMovies=   await this.movieUserLikeRepository.createQueryBuilder('mul')
+      .leftJoinAndSelect('mul.movie', 'movie')
+      .leftJoinAndSelect('mul.user', 'user')
+      .where('movie.id IN (:...movieIds)', { movieIds })
+      .andWhere('user.id = :userId', { userId })
+      .getMany();      
+
+      /** {
+        moviedId:boolean
+         }
+       ===> likedMoviesss  { '2': true, '4': true, '5': false }      
+      */
+      const likedMovieMap=likedMovies.reduce((acc, next) =>( {
+         ...acc,
+         [next.movie.id]: next.isLike,        
+      }),{});
+      const updateItem=items.map((item : Movie)=>({
+        ...item,
+        likeStatus: item.id in likedMovieMap ? likedMovieMap[item.id] as boolean | null  : null,
+
+      }));
+      result={
+        ...result,
+        items:updateItem,
+      }
+    }
+    
     //qb.orderBy('moive.id', 'DESC');
 
     //1. 페이지 기반 페이지네이션 (Page-based Pagination)
     //return await this.commonService.applyPagePaginationParamsToQb(qb, dto);
 
     //2. Cursors pagination (Cursor-based Pagination)
-    return await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
+    return result;
   }
 
   async findOne(id: number): Promise<Movie> {
