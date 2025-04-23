@@ -66,6 +66,7 @@ export class MoviesService {
       .leftJoinAndSelect('moive.director', 'director')
       .leftJoinAndSelect('moive.genres', 'genres')
       .leftJoinAndSelect('moive.detail', 'detail')
+      .leftJoinAndSelect('moive.creator', 'creator')
       .where('moive.id = :id', { id })
       .getOne();
 
@@ -79,7 +80,7 @@ export class MoviesService {
     return movie;
   }
 
-  async create(createMovieDto: CreateMovieDto,  qr: QueryRunner, ) {
+  async create(createMovieDto: CreateMovieDto, userId:number   , qr: QueryRunner ) {
    const dirctor = await qr.manager.findOne(Director, {
      where: { id: createMovieDto.directorId },
    });
@@ -112,13 +113,6 @@ export class MoviesService {
     }
 
 
-    const movieFolder = join('public', 'movie');
-    const tempFolder = join('public', 'temp');
-    await rename(
-      join(process.cwd(), tempFolder, createMovieDto.movieFileName),
-      join(process.cwd(), movieFolder, createMovieDto.movieFileName),    
-    );
-
   //   let posterFilePath="";    
   //   if(posterFileName){
   //    posterFilePath = path.posix.join('public', 'poster', posterFileName);
@@ -134,7 +128,17 @@ export class MoviesService {
       movieFilePath:path.posix.join('public', 'movie', createMovieDto.movieFileName),
       //posterFilePath:posterFilePath,
       director: dirctor,
+      creator: {
+        id: userId
+      }
     });
+
+    const movieFolder = join('public', 'movie');
+    const tempFolder = join('public', 'temp');
+    await rename(
+      join(process.cwd(), tempFolder, createMovieDto.movieFileName),
+      join(process.cwd(), movieFolder, createMovieDto.movieFileName),    
+    );
 
 
      return movie;

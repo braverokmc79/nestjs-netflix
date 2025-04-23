@@ -22,9 +22,10 @@ import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/users/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
-import { QueryRunner } from 'typeorm';
 import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';
-
+import { UserId } from 'src/users/decorator/user-id.decorator';
+import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
+import { QueryRunner as QR } from 'typeorm';
 
 
 
@@ -52,9 +53,11 @@ export class MoviesController {
   //@UseInterceptors(TransactionInterceptor)
   postMovie(
     @Body() body: CreateMovieDto,
-    @Request() req,
+    @QueryRunner() queryRunner:QR,
+    @UserId() userId: number    
   ) {    
-    return this.moviesService.create(body, req.queryRunner as QueryRunner);
+    
+    return this.moviesService.create(body, userId, queryRunner );
   }
 
 
@@ -82,7 +85,8 @@ export class MoviesController {
     }
     const posterFile = file?.poster?.[0];
     //movieFile.filename, posterFile?.filename,
-    return this.moviesService.create(body,req.queryRunner as QueryRunner);
+    //return this.moviesService.create(body,req.queryRunner as QueryRunner);
+    return  null;
   }
 
 
