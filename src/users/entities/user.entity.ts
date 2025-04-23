@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { BaseTable } from 'src/common/entity/base.entity';
+import { MovieUserLike } from 'src/movies/entity/movie-user-like.entity';
 import { Movie } from 'src/movies/entity/movie.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -49,4 +50,13 @@ export class User extends BaseTable {
     {cascade: true,}
   )
   createdMovies: Movie[];
+
+
+  @OneToMany(
+    () => MovieUserLike,
+    (movie) => movie.user,    
+  )
+  likedMovies: Movie[];
+
+  
 }

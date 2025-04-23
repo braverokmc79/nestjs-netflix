@@ -66,4 +66,35 @@ export class AuthController {
     const user = req.user as User;
     return user;
   }
+
+  /**
+   * 
+   * [Like]  [DisLike]
+   * 
+   * 
+   * 아무것도 누르지 않은 상태
+   * Like & Dislike 모두 버튼 꺼져있음
+   * 
+   * 
+   * Like 버튼 누르면
+   * Like 버튼 불 켜짐
+   * 
+   * Like 버튼 다시 누르면
+   * Like 버튼  불 꺼짐
+   
+   * DisLike 버튼 누르면
+   * DisLike 버튼 불 켜짐
+   * 
+   * DisLike 버튼 다시 누르면
+   * DisLike 버튼  불 꺼짐
+   * 
+   * 
+   * 
+   * Diskislike 버튼 누르면
+   * like 버튼 불 꺼지고 Dislike 버튼 켜짐
+   * 
+   */
+
+
+
 }
