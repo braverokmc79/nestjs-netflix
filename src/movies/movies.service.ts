@@ -11,6 +11,7 @@ import { GetMoviesDto } from './dto/get-movies.dto';
 import { CommonService } from 'src/common/common.service';
 import {join} from 'path';
 import * as path from 'path';
+import {rename} from 'fs/promises';
 
 @Injectable()
 export class MoviesService {
@@ -78,7 +79,7 @@ export class MoviesService {
     return movie;
   }
 
-  async create(createMovieDto: CreateMovieDto, movieFileName:string,   posterFileName:string|undefined, qr: QueryRunner, ) {
+  async create(createMovieDto: CreateMovieDto,  qr: QueryRunner, ) {
    const dirctor = await qr.manager.findOne(Director, {
      where: { id: createMovieDto.directorId },
    });
@@ -111,16 +112,18 @@ export class MoviesService {
     }
 
 
-  
-   const movieFilePath = path.posix.join('public', 'movie', movieFileName);
+    const movieFolder = join('public', 'movie');
+    const tempFolder = join('public', 'temp');
+    await rename(
+      join(process.cwd(), tempFolder, createMovieDto.movieFileName),
+      join(process.cwd(), movieFolder, createMovieDto.movieFileName),    
+    );
 
-    let posterFilePath="";    
-    if(posterFileName){
-     posterFilePath = path.posix.join('public', 'poster', posterFileName);
-    }
+  //   let posterFilePath="";    
+  //   if(posterFileName){
+  //    posterFilePath = path.posix.join('public', 'poster', posterFileName);
+  //   }
     
-
-
     
     const movie = await qr.manager.save(Movie,{
       title: createMovieDto.title,
@@ -128,8 +131,8 @@ export class MoviesService {
       detail: {
         detail: createMovieDto.detail,
       },
-      movieFilePath:movieFilePath,
-      posterFilePath:posterFilePath,
+      movieFilePath:path.posix.join('public', 'movie', createMovieDto.movieFileName),
+      //posterFilePath:posterFilePath,
       director: dirctor,
     });
 

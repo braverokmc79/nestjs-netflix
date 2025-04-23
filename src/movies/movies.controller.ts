@@ -11,7 +11,6 @@ import {
   Query,
   ParseIntPipe,
   Request,
-  UploadedFile,
   UploadedFiles,
   BadRequestException,
 } from '@nestjs/common';
@@ -23,11 +22,9 @@ import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/users/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
-import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { QueryRunner } from 'typeorm';
 import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';
-import { MovieFilePipe } from './pipe/movie-file.pipe';
+
 
 
 
@@ -53,15 +50,21 @@ export class MoviesController {
   @Post()
   @RBAC(Role.admin)
   //@UseInterceptors(TransactionInterceptor)
-  @UseInterceptors(
-    MovieUploadInterceptor({
-      maxSize: 20,
-    }),
-  )
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFiles(
+  ) {    
+    return this.moviesService.create(body, req.queryRunner as QueryRunner);
+  }
+
+
+
+
+  @Post("upload")
+  @RBAC(Role.admin)
+  //@UseInterceptors(TransactionInterceptor)
+  @UseInterceptors(MovieUploadInterceptor({maxSize: 20,}),)
+  postMovie2(@Body() body: CreateMovieDto,@Request() req,@UploadedFiles(
       // new MovieFilePipe({
       //   maxSize: 10,
       //   mimetype: 'video/mp4',
@@ -73,16 +76,16 @@ export class MoviesController {
     },
     //movie: Express.Multer.File,
   ) {
-
     const movieFile = file?.movie?.[0];
     if (!movieFile) {
       throw new BadRequestException('movie 파일이 업로드되지 않았습니다.');
     }
     const posterFile = file?.poster?.[0];
-
-
-    return this.moviesService.create(body, movieFile.filename, posterFile?.filename,  req.queryRunner as QueryRunner);
+    //movieFile.filename, posterFile?.filename,
+    return this.moviesService.create(body,req.queryRunner as QueryRunner);
   }
+
+
 
   @Patch(':id')
   @RBAC(Role.admin)
