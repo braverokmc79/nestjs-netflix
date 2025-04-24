@@ -26,6 +26,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MovieUserLike } from './movies/entity/movie-user-like.entity';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 
 
 @Module({
@@ -74,7 +75,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       serveRoot: '/public/',
     }),
     CacheModule.register({
-      ttl: 0,  //10초
+      ttl: 10000,  //10초
       isGlobal:true
     }),
     MoviesModule,
@@ -97,15 +98,20 @@ import { CacheModule } from '@nestjs/cache-manager';
       useClass: ResponseTimeInterceptor,
     },
 
-    {
-      provide: APP_FILTER,
-      useClass: ForbiddenExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: ForbiddenExceptionFilter,
+    // },
 
     {
       provide: APP_FILTER,
       useClass: QueryFailedExceptionFilter,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ThrottleInterceptor,
+
+    }
   ],
 })
 export class AppModule implements NestModule {

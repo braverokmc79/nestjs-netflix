@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException,  Inject, Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { NextFunction, Request, Response } from "express";
@@ -26,22 +26,27 @@ export class BearerTokenMiddleware implements NestMiddleware {
             return;
         }
 
+        const token = this.validateBearerToken(authHeader);
+
+        // const blockedToken = await this.cacheManager.get<string>(`BLOCK_TOKEN_${token}`);
+        // if(blockedToken){
+        //     throw new UnauthorizedException('차단된 토큰입니다.');
+        // }
+
+
+        const tokenKey = `TOKEN_${token}`;
+        const cachedPayload = await this.cacheManager.get(tokenKey);
+        if(cachedPayload){
+            req.user=cachedPayload;
+        }
+        const decodedPayload: UserPayload = this.jwtService.decode(token);
+        if(decodedPayload.type !== 'refresh' && decodedPayload.type !== 'access'){
+            throw new UnauthorizedException('잘못된 토큰입니다!');
+        }
+
+
         try {          
             
-            const token = this.validateBearerToken(authHeader);
-            const tokenKey = `TOKEN_${token}`;
-            const cachedPayload = await this.cacheManager.get(tokenKey);
-            if(cachedPayload){
-                req.user=cachedPayload;
-            }
-
-
-            const decodedPayload: UserPayload = this.jwtService.decode(token);
-
-            if(decodedPayload.type !== 'refresh' && decodedPayload.type !== 'access'){
-                throw new UnauthorizedException('잘못된 토큰입니다!');
-            }
-
             const secretKey = decodedPayload.type === 'refresh' ?
                 envVariableKeys.refreshTokenSecret :
                 envVariableKeys.accessTokenSecret;

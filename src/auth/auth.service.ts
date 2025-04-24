@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {  User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './strategy/jwt.strategy';
 import { envVariableKeys } from 'src/common/const/env.const';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 
 
@@ -17,8 +18,29 @@ export class AuthService {
     private readonly usersRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
   ) {}
 
+
+  async tokenBlock(token: string) {
+
+    const payload : JwtPayload = this.jwtService.decode(token);
+    if (!payload || !payload.exp) {
+      throw new UnauthorizedException('차단된 토큰입니다.');
+    }
+
+    const expiryDate =new Date(payload['exp'] * 1000);// JWT 만료 시각
+    
+    const now = +Date.now();  // 현재 시각
+    const differenceInSeconds =(expiryDate.getTime()-now)/1000;                 
+    const ttl = Math.max((differenceInSeconds)*1000, 1);
+
+    await this.cacheManager.set(`BLOCK_TOKEN_${token}`, payload, ttl);
+
+    return true;
+  }
 
 
   parseBasicToken(rawToken: string) {

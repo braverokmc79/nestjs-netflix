@@ -26,7 +26,8 @@ import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.inte
 import { UserId } from 'src/users/decorator/user-id.decorator';
 import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
-import { CacheKey, CacheTTL, CacheInterceptor as CI } from "@nestjs/cache-manager"
+import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
+import { Throttle } from 'src/common/decorator/throttle.decorator';
 
 
 
@@ -39,6 +40,10 @@ export class MoviesController {
   @Get()
   @Public()
   @UseInterceptors(CacheInterceptor)
+  // @Throttle({
+  //   count:5,
+  //   unit:"minute"
+  // })
   getMovies(@Query() dto: GetMoviesDto,
   @UserId() userId?: number
 ) {

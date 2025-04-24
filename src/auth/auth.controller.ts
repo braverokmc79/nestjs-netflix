@@ -27,6 +27,16 @@ export class AuthController {
     return this.authService.login(token);
   }
 
+  @Public()
+  @Post("token/block")
+   blockToken(
+    @Body('token') token: string,
+  ) {
+    console.log("🔖 %%% token ", token);
+    return  this.authService.tokenBlock(token);
+  }
+
+
   @Post('token/access')
   async rotateAccessToken(@Request() req : ExpressRequest) {
     const user = req.user as User;
@@ -66,6 +76,9 @@ export class AuthController {
     const user = req.user as User;
     return user;
   }
+
+
+
 
   /**
    * 
