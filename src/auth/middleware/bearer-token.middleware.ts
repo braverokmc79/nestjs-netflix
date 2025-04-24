@@ -1,15 +1,19 @@
-import { BadRequestException, Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { NextFunction, Request, Response } from "express";
 import { envVariableKeys } from "src/common/const/env.const";
 import { UserPayload } from "../types/user-payload.interface";
+import { CACHE_MANAGER, Cache} from "@nestjs/cache-manager";
 
 @Injectable()
 export class BearerTokenMiddleware implements NestMiddleware {
     constructor(
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache
     ) {}
 
     async use(req: Request, res: Response, next: NextFunction) {       
@@ -22,9 +26,16 @@ export class BearerTokenMiddleware implements NestMiddleware {
             return;
         }
 
-        const token = this.validateBearerToken(authHeader);
-       // console.log('🎈🎈🎈🎈BearerTokenMiddleware called! token', token);
         try {          
+            
+            const token = this.validateBearerToken(authHeader);
+            const tokenKey = `TOKEN_${token}`;
+            const cachedPayload = await this.cacheManager.get(tokenKey);
+            if(cachedPayload){
+                req.user=cachedPayload;
+            }
+
+
             const decodedPayload: UserPayload = this.jwtService.decode(token);
 
             if(decodedPayload.type !== 'refresh' && decodedPayload.type !== 'access'){
@@ -40,6 +51,15 @@ export class BearerTokenMiddleware implements NestMiddleware {
                     secretKey,
                 ),
             });
+
+            //// payload['exp'] -> epoch time second
+            const expiryDate =new Date(payload['exp'] * 1000);// JWT 만료 시각
+            const now = +Date.now();  // 현재 시각
+            const differenceInSeconds =(expiryDate.getTime()-now)/1000;  
+            // JWT 토큰이 만료되기 30초 전에 캐시를 만료  
+            //🔖JWT 만료보다 30초 일찍 캐시 삭제 (너무 딱 맞추면 리스크 있음)                 
+            const ttl = Math.max((differenceInSeconds-30)*1000, 1);
+            await this.cacheManager.set(tokenKey, payload, ttl);
 
             req.user = payload;
             next();

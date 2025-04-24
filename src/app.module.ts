@@ -25,6 +25,7 @@ import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MovieUserLike } from './movies/entity/movie-user-like.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 
 @Module({
@@ -71,6 +72,10 @@ import { MovieUserLike } from './movies/entity/movie-user-like.entity';
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public/',
+    }),
+    CacheModule.register({
+      ttl: 0,  //10초
+      isGlobal:true
     }),
     MoviesModule,
     DirectorModule,

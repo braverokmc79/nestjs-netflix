@@ -11,7 +11,6 @@ import { Genre } from 'src/genre/entity/genre.entity';
 import { CommonModule } from 'src/common/common.module';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { User } from 'src/users/entities/user.entity';
-import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([
@@ -24,9 +23,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     MovieUserLike
   ]),
     CommonModule,  
-    CacheModule.register({
-      ttl: 10000  //10초
-    })
+
   ],
   controllers: [MoviesController],
   providers: [MoviesService],
