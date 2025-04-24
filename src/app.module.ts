@@ -21,12 +21,13 @@ import { AuthGuard } from './auth/guard/auth.guard';
 import { RbacGuard } from './auth/guard/rbac.guard';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
-import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
+
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MovieUserLike } from './movies/entity/movie-user-like.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 @Module({
@@ -78,6 +79,7 @@ import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
       ttl: 10000,  //10초
       isGlobal:true
     }),
+    ScheduleModule.forRoot(),
     MoviesModule,
     DirectorModule,
     GenreModule,
