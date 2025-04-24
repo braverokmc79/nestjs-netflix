@@ -26,6 +26,7 @@ import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.inte
 import { UserId } from 'src/users/decorator/user-id.decorator';
 import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import { CacheKey, CacheTTL, CacheInterceptor as CI } from "@nestjs/cache-manager"
 
 
 
@@ -45,6 +46,24 @@ export class MoviesController {
     console.log("userId ", userId);
     return this.moviesService.findAll(dto, userId);
   }
+
+
+  /**
+   * 영화 최신데이터 가져오기
+   */
+  @Get("recent")
+  @UseInterceptors(CI)
+  // @CacheKey("getMoviesRecent")
+  // @CacheTTL(3000)
+  @Public()
+  getMoviesRecent() {
+    console.log("✅getMoviesRecent 실행 완료");
+    return this.moviesService.findRecent();
+  }
+
+
+
+
 
   @Get(':id')
   @Public()

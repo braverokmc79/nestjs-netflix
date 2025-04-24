@@ -50,6 +50,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
+      cache-manager:
+        specifier: ^6.4.2
+        version: 6.4.2
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1

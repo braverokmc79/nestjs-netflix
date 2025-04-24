@@ -1,4 +1,4 @@
-import {   BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import {   BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import * as path from 'path';
 import {rename} from 'fs/promises';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { User } from 'src/users/entities/user.entity';
+import { CACHE_MANAGER , Cache} from '@nestjs/cache-manager';
 
 
 @Injectable()
@@ -42,6 +43,10 @@ export class MoviesService {
     private readonly dataSource: DataSource,
 
     private readonly commonService: CommonService,
+
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
+
   ) {}
 
   // select * from movie_user_like mul 
@@ -104,6 +109,34 @@ export class MoviesService {
     //2. Cursors pagination (Cursor-based Pagination)
     return result;
   }
+
+
+  async findRecent() {
+      const cacheData=await this.cacheManager.get('MOVIE_RECENT');
+
+      if(cacheData){
+        console.log("👺캐시에서 가져온", cacheData);
+        return cacheData;
+      }
+
+
+       const data=await this.movieRepository.find({
+        order: {
+          id: 'DESC',
+        },
+        take: 10,
+      })
+
+      //ttl을 생략하면, CacheModule.register({ ttl: ... })에 설정한 기본 TTL 
+      //만약 CacheModule에서 ttl도 안 줬다면  무제한 저장
+      await this.cacheManager.set('MOVIE_RECENT', data, 3000);   //3초
+
+      return data;
+  }
+
+
+
+
 
   async findOne(id: number): Promise<Movie> {
     const movie = await this.movieRepository
