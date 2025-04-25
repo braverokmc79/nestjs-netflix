@@ -4,11 +4,21 @@ import { CustomExceptionFilter } from './common/filter/custom-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptor/transaction.interceptor';
+import { WINSTON_MODULE_NEST_PROVIDER , } from 'nest-winston';
 
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  
+  const app = await NestFactory.create(AppModule,{
+    //logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    //logger: ['error', 'warn'],
+    //logger:false
+    
+  });
   app.useGlobalFilters(new CustomExceptionFilter());
+
+  
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.useGlobalPipes(
     new ValidationPipe({

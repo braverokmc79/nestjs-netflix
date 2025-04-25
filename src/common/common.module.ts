@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from 'src/movies/entity/movie.entity';
 import { TasksService } from './tasks.service';
+import { DefaultLogger } from './logger/default.logger';
 
 
 
@@ -38,7 +39,7 @@ import { TasksService } from './tasks.service';
     ]),
   ],
   controllers: [CommonController],  
-  providers: [CommonService,TasksService],
+  providers: [CommonService,TasksService, DefaultLogger],
   exports: [CommonService],
 })
 export class CommonModule {

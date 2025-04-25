@@ -47,7 +47,6 @@ export class Movie extends BaseTable {
   likeCount: number;
 
 
-
   @Column({
     default: 0
   })

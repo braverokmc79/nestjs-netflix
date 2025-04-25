@@ -12,25 +12,46 @@ import { DefaultLogger } from "./logger/default.logger";
 
 @Injectable()
 export class TasksService {
-    // private readonly logger = new Logger(TasksService.name);
+   // private readonly logger = new Logger(TasksService.name);
 
     constructor(
         @InjectRepository(Movie)
         private readonly movieRepository: Repository<Movie>,
         private readonly schedulerRegistry: SchedulerRegistry,
-         //private readonly logger: DefaultLogger,
-        // @Inject(WINSTON_MODULE_NEST_PROVIDER)
-        // private readonly logger: LoggerService,
+       // private readonly logger: DefaultLogger,
+        
+        @Inject(WINSTON_MODULE_NEST_PROVIDER)
+        private readonly logger: LoggerService,
     ) { }
 
-    // @Cron('*/5 * * * * *')
+    //@Cron('*/5 * * * * *')
     logEverySecond() {
-        // this.logger.fatal('FATAL 레벨 로그', null, TasksService.name);
-        // this.logger.error('ERROR 레벨 로그', null, TasksService.name);
-        // this.logger.warn('WARN 레벨 로그', TasksService.name);
-        // this.logger.log('LOG 레벨 로그', TasksService.name);
-        // this.logger.debug('DEBUG 레벨 로그', TasksService.name);
-        // this.logger.verbose('VERBOSE 레벨 로그', TasksService.name);
+        // this.logger.log('silly', "silly - there's no place like home");
+        // this.logger.log('debug', "debug - there's no place like home");
+        // this.logger.log('verbose', "verbose - there's no place like home");
+        // this.logger.log('info', "info - there's no place like home");
+        // this.logger.log('warn', "warn - there's no place like home");
+        // this.logger.log('error', "error - there's no place like home");    
+        // this.logger.warn("127.0.0.1 - there's no place like home");
+        // this.logger.error("127.0.0.1 - there's no place like home");
+        
+        if (this.logger) {
+            if (this.logger?.fatal) {
+                this.logger.fatal('FATAL 레벨 로그', null, TasksService.name);
+            }
+            this.logger?.error('ERROR 레벨 로그', null, TasksService.name);
+            this.logger?.warn('WARN 레벨 로그', TasksService.name);
+            this.logger?.log('LOG 레벨 로그', TasksService.name);
+            
+            if (typeof this.logger?.debug === 'function') {
+                this.logger.debug('DEBUG 레벨 로그', TasksService.name);
+            }
+           
+            if (typeof this.logger?.verbose === 'function') {
+                this.logger.verbose('VERBOSE 레벨 로그', TasksService.name);
+            }
+        }
+        
     }
 
     // @Cron('* * * * * *')

@@ -1,4 +1,4 @@
-import { Logger, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {  MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -28,7 +28,11 @@ import { MovieUserLike } from './movies/entity/movie-user-like.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { WinstonModule } from 'nest-winston/dist/winston.module';
+import * as winston from 'winston';
+import * as dayjs from 'dayjs';
+import * as weekday from 'dayjs/plugin/weekday';
+import * as customParseFormat from 'dayjs/plugin/customParseFormat'
 
 @Module({
   imports: [
@@ -80,7 +84,42 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal:true
     }),
     ScheduleModule.forRoot(),
-    
+  
+    /** 🎈 winston 로그 설정  */
+    WinstonModule.forRoot({
+      level: "silly",  // error:0, warn:1, info:2, http:3, verbose:4, debug:5, silly:6
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.colorize({ all: true }),
+            winston.format.simple(),
+            winston.format.printf((info) => {
+              dayjs.extend(weekday);
+              dayjs.extend(customParseFormat);
+              const formattedTime = dayjs(String(info.timestamp)).format('YYYY-MM-DD HH:mm:ss (ddd)');
+              return `[${info.level}] [${String(formattedTime)}] [${String(info.context)}] : ${String(info.message)}`;
+            })
+          ),
+        }),
+        new winston.transports.File({
+           level: 'error',
+           dirname:join(process.cwd(), 'logs'),
+           filename: 'logs.log',
+           format: winston.format.combine(
+             winston.format.timestamp(),
+             winston.format.printf((info) => {
+              dayjs.extend(weekday);
+              dayjs.extend(customParseFormat);
+              const formattedTime = dayjs(String(info.timestamp)).format('YYYY-MM-DD HH:mm:ss (ddd)');
+               return `[${info.level}] [${String(formattedTime)}] [${String(info.context)}] : ${String(info.message)}`;
+             })
+           )
+
+         })
+      ],
+    }),
+
     MoviesModule,
     DirectorModule,
     GenreModule,
