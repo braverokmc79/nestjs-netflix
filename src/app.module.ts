@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -80,6 +80,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal:true
     }),
     ScheduleModule.forRoot(),
+    
     MoviesModule,
     DirectorModule,
     GenreModule,
