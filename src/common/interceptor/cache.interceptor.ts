@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable, of, tap } from "rxjs";
-import type { Request } from '@nestjs/common';
+import type { Request } from 'express';
 
 
 @Injectable()

@@ -5,16 +5,21 @@ import type{ Request as ExpressRequest } from 'express';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard} from './strategy/jwt.strategy';
 import { Public } from './decorator/public.decorator';
+import { ApiBasicAuth, ApiBearerAuth } from '@nestjs/swagger';
+import { Authorization } from './decorator/authorization.decorator';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post('register')
-  registerUser(@Headers('authorization') token: string,
-    @Body() body :{username: string, name: string}
+  @ApiBasicAuth()
+  registerUser(
+    @Headers('authorization') token: string,
+    @Body() body: { username: string; name: string },
   ) {
     console.log('body', body);
     return this.authService.registerUser(token, body);
@@ -22,25 +27,23 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  loginUser(@Headers('authorization') token: string) {
+  @ApiBasicAuth()
+  loginUser(@Authorization() token: string) {
     console.log('*** token', token);
     return this.authService.login(token);
   }
 
   @Public()
-  @Post("token/block")
-   blockToken(
-    @Body('token') token: string,
-  ) {
-    console.log("🔖 %%% token ", token);
-    return  this.authService.tokenBlock(token);
+  @Post('token/block')
+  blockToken(@Body('token') token: string) {
+    console.log('🔖 %%% token ', token);
+    return this.authService.tokenBlock(token);
   }
 
-
   @Post('token/access')
-  async rotateAccessToken(@Request() req : ExpressRequest) {
+  async rotateAccessToken(@Request() req: ExpressRequest) {
     const user = req.user as User;
-    return {      
+    return {
       accessToken: await this.authService.issueToken(user, false),
     };
   }
@@ -77,9 +80,6 @@ export class AuthController {
     return user;
   }
 
-
-
-
   /**
    * 
    * [Like]  [DisLike]
@@ -107,7 +107,4 @@ export class AuthController {
    * like 버튼 불 꺼지고 Dislike 버튼 켜짐
    * 
    */
-
-
-
 }

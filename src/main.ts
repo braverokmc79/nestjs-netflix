@@ -1,10 +1,11 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomExceptionFilter } from './common/filter/custom-exception.filter';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptor/transaction.interceptor';
 import { WINSTON_MODULE_NEST_PROVIDER , } from 'nest-winston';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap() {
@@ -13,14 +14,32 @@ async function bootstrap() {
     //logger: ['error', 'warn', 'log', 'debug', 'verbose'],
     //logger: ['error', 'warn'],
     //logger:false
+    logger: ['verbose'],
     
   });
-  app.enableVersioning({
-    type: VersioningType.MEDIA_TYPE,
+  const config = new DocumentBuilder()
+    .setTitle('넷플릭스')
+    .setDescription('NextJS 만드는 넥플릭스')
+    .setVersion('1.0')
+    .addBasicAuth()
+    .addBearerAuth()
+    .build();
+  
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('doc', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true
+    }
+  });
+  
+
+  
+ // app.enableVersioning({
+    //type: VersioningType.MEDIA_TYPE,
     //defaultVersion: ['1', '2'],
     //header:"version",
-    key:"v=",
-  });
+    //key:"v=",
+ // });
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useGlobalFilters(new CustomExceptionFilter());

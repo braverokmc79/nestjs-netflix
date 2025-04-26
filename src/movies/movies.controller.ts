@@ -29,19 +29,8 @@ import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
 import { Throttle } from 'src/common/decorator/throttle.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller({
-  path: 'movies',
-  version: '2',
-})
-export class MovieControllerV2 {
-  @Get()
-  getMovies() {
-    return {
-      message: 'movie v2',
-    };
-  }
-}
 
 
 
@@ -50,6 +39,7 @@ export class MovieControllerV2 {
   version: VERSION_NEUTRAL
 })
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
@@ -76,7 +66,7 @@ export class MoviesController {
   @UseInterceptors(CI)
   // @CacheKey("getMoviesRecent")
   // @CacheTTL(3000)
-  @Public()
+  //@Public()
   getMoviesRecent() {
     console.log("✅getMoviesRecent 실행 완료");
     return this.moviesService.findRecent();
