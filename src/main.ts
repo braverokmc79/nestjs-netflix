@@ -1,7 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomExceptionFilter } from './common/filter/custom-exception.filter';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptor/transaction.interceptor';
 import { WINSTON_MODULE_NEST_PROVIDER , } from 'nest-winston';
@@ -15,10 +15,15 @@ async function bootstrap() {
     //logger:false
     
   });
-  app.useGlobalFilters(new CustomExceptionFilter());
+  app.enableVersioning({
+    type: VersioningType.MEDIA_TYPE,
+    //defaultVersion: ['1', '2'],
+    //header:"version",
+    key:"v=",
+  });
 
-  
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useGlobalFilters(new CustomExceptionFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({

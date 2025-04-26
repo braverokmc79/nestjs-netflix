@@ -13,6 +13,7 @@ import {
   Request,
   UploadedFiles,
   BadRequestException,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -29,10 +30,25 @@ import { QueryRunner as QR } from 'typeorm';
 import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
 import { Throttle } from 'src/common/decorator/throttle.decorator';
 
+@Controller({
+  path: 'movies',
+  version: '2',
+})
+export class MovieControllerV2 {
+  @Get()
+  getMovies() {
+    return {
+      message: 'movie v2',
+    };
+  }
+}
 
 
 
-@Controller('movies')
+@Controller({
+  path: 'movies',
+  version: VERSION_NEUTRAL
+})
 @UseInterceptors(ClassSerializerInterceptor)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
