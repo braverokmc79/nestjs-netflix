@@ -29,52 +29,52 @@ import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
 import { Throttle } from 'src/common/decorator/throttle.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 
 
 
 @Controller({
   path: 'movies',
-  version: VERSION_NEUTRAL
+  version: VERSION_NEUTRAL,
 })
 @UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
+@ApiTags('movies')
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
   @Public()
-  @UseInterceptors(CacheInterceptor)
+  //@UseInterceptors(CacheInterceptor)
   // @Throttle({
   //   count:5,
   //   unit:"minute"
-  // })
-  getMovies(@Query() dto: GetMoviesDto,
-  @UserId() userId?: number
-) {
+    // })
+  @ApiResponse({
+    type: GetMoviesDto, 
+    status: 200,
+    description: '성공적으로 API 실행 했을 때',
 
-    console.log("userId ", userId);
+
+  })
+  getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
+    console.log('userId ', userId);
     return this.moviesService.findAll(dto, userId);
   }
-
 
   /**
    * 영화 최신데이터 가져오기
    */
-  @Get("recent")
+  @Get('recent')
   @UseInterceptors(CI)
   // @CacheKey("getMoviesRecent")
   // @CacheTTL(3000)
   //@Public()
   getMoviesRecent() {
-    console.log("✅getMoviesRecent 실행 완료");
+    console.log('✅getMoviesRecent 실행 완료');
     return this.moviesService.findRecent();
   }
-
-
-
-
 
   @Get(':id')
   @Public()
@@ -100,9 +100,8 @@ export class MoviesController {
   postMovie2(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFiles()
-    file // new MovieFilePipe({
-    //   maxSize: 10,
+    @UploadedFiles() // new MovieFilePipe({
+    file //   maxSize: 10,
     //   mimetype: 'video/mp4',
     // }),
     : {
@@ -143,21 +142,18 @@ export class MoviesController {
   }
 
   @Post(':id/like')
-   createMovieLike(
+  createMovieLike(
     @Param('id', ParseIntPipe) movieId: number,
     @UserId() userId: number,
   ) {
-    
-    return  this.moviesService.toggleMovieLike(movieId, userId, true);
+    return this.moviesService.toggleMovieLike(movieId, userId, true);
   }
-
 
   @Post(':id/dislike')
-   createMovieDisLike(
+  createMovieDisLike(
     @Param('id', ParseIntPipe) movieId: number,
     @UserId() userId: number,
   ) {
-    return  this.moviesService.toggleMovieLike(movieId, userId, false);
+    return this.moviesService.toggleMovieLike(movieId, userId, false);
   }
-
 }

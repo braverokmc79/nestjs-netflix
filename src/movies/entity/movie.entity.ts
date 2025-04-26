@@ -6,6 +6,7 @@ import { Genre } from "src/genre/entity/genre.entity";
 import { Transform } from "class-transformer";
 import { User } from "src/users/entities/user.entity";
 import { MovieUserLike } from "./movie-user-like.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
 
 
@@ -31,6 +32,11 @@ export class Movie extends BaseTable {
   @Column({
     unique: true
   })
+  @ApiProperty({
+    description: '영화의 제목',
+    example: '겨울왕국',
+    required: true,
+  })
   title: string;
 
   @ManyToMany(() => Genre, (genre) => genre.movies, {
@@ -44,11 +50,19 @@ export class Movie extends BaseTable {
   @Column({
     default: 0
   })
+  @ApiProperty({
+    description: '좋아요 개수',
+    example: '0',
+  })
   likeCount: number;
 
 
   @Column({
     default: 0
+  })
+  @ApiProperty({
+    description: '싫어요 개수',
+    example: '0',
   })
   dislikeCount: number;
 
@@ -58,15 +72,27 @@ export class Movie extends BaseTable {
     nullable: false,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: '영화의 상세정보',
+    example: '영화 상세정보',
+  })  
   detail: MovieDetail;
 
   
   @Column()
   @Transform(({ value }) => `http://localhost:3000/${value}`)
+  @ApiProperty({
+    description: '영화 파일 경로',
+    example: 'http://localhost:3000/abc.mp4',
+  })  
   movieFilePath:string;
 
   @Column({
     nullable: true
+  })
+  @ApiProperty({
+    description: '영화 포스터 파일 경로',
+    example: 'http://localhost:3000/abc.jpg',
   })
   posterFilePath:string;
   
@@ -76,6 +102,10 @@ export class Movie extends BaseTable {
     nullable: false,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: '감독',
+    example: '홍길동',
+  })  
   director: Director;
 
   

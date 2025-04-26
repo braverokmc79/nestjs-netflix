@@ -217,12 +217,15 @@ export class MoviesService {
       },
     });
 
-    const movieFolder = join('public', 'movie');
-    const tempFolder = join('public', 'temp');
-    await rename(
-      join(process.cwd(), tempFolder, createMovieDto.movieFileName),
-      join(process.cwd(), movieFolder, createMovieDto.movieFileName),
-    );
+    if (createMovieDto.movieFileName && createMovieDto.movieFileName.length > 0) {
+           const movieFolder = join('public', 'movie');
+           const tempFolder = join('public', 'temp');
+           await rename(
+             join(process.cwd(), tempFolder, createMovieDto.movieFileName),
+             join(process.cwd(), movieFolder, createMovieDto.movieFileName),
+           );
+    }
+ 
 
     return movie;
 

@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsArray, IsInt, IsOptional, IsString } from "class-validator";
 
 /**
@@ -47,10 +49,13 @@ if (cursor) {
 
 
 export class CursorPaginationDto {
-
   @IsString()
   @IsOptional()
   // id_52, likeCount_52
+  @ApiProperty({
+    description: '커서',
+    example: 'eyJ2YWx1ZXMiOnsiaWQiOjJ9LCJvcmRlciI6WyJpZF9ERVNDIl19',
+  })
   cursor?: string;
 
   @IsArray()
@@ -58,12 +63,24 @@ export class CursorPaginationDto {
   @IsOptional()
   // id_ASC id_DESC
   // [id_DESC, likeCount_DESC]
+  @ApiProperty({
+    description: '내리차 또는 오름차 정렬 기준 (배열로 : ["id_DESC"])',
+    example: ['id_DESC'],
+  })
+  
+  @Transform(({ value }: { value: string | string[] }) =>
+     Array.isArray(value) ? value : [value],
+  )
   order: string[] = ['id_DESC'];
+
 
   @IsInt()
   @IsOptional()
+  @ApiProperty({
+    description: '가져올 데이터 갯수',
+    example: 5,
+  })
   take: number = 5;
-  
 }
 
 /**
