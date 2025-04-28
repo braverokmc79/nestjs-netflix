@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './strategy/jwt.strategy';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 
 
@@ -18,7 +20,7 @@ export class AuthService {
     private readonly usersRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-    
+    private readonly userService:UsersService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache
   ) {}
@@ -117,15 +119,14 @@ export class AuthService {
     if (user) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
     }
+    const createUserDto =new CreateUserDto();
+    createUserDto.email = email;
+    createUserDto.password = password;
+    createUserDto.username = body?.username|| "";
+    createUserDto.name = body?.name|| "";
 
-    const hashRounds = this.configService.get<number>('HASH_ROUNDS') || 10;
-    const hashedPassword = await bcrypt.hash(password, hashRounds);
-    await this.usersRepository.save({
-      username: body?.username ? body.username : email,
-      name: body?.name ? body.name : email,
-      email,
-      password: hashedPassword,
-    });
+    await this.userService.create(createUserDto)
+
     return this.usersRepository.findOne({ where: { email } });
   }
 

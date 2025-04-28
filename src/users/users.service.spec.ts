@@ -6,8 +6,11 @@ import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 // User 엔티티
 import { User } from './entities/user.entity';
-import { NotFoundException } from '@nestjs/common';
-
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcryptjs'
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // 레포지토리를 mocking하기 위한 객체
 const mockUserRepository = {
@@ -17,6 +20,12 @@ const mockUserRepository = {
   update: jest.fn(),  // update 메서드를 jest mock 함수로 생성
   delete: jest.fn(),  // delete 메서드를 jest mock 함수로 생성
 };
+
+const mockConfigService = {
+  get: jest.fn(),
+};
+
+
 
 // UsersService 테스트 시작
 describe('UsersService', () => {
@@ -31,6 +40,12 @@ describe('UsersService', () => {
           provide: getRepositoryToken(User), // User 엔티티 레포지토리 대신
           useValue: mockUserRepository,      // mock 레포지토리를 주입
         },
+        
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+        
       ],
     }).compile();
 
@@ -101,14 +116,11 @@ describe('UsersService', () => {
   });
 
 
-  describe("remove", () => {
-    
-   
+  describe("remove", () => {   
     it('should reutrn deleted a user byid' , async () => {
       const id=999;
 
-      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue(id);
-     
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue(id);     
       const result =await userService.remove(id);
       expect(result).toEqual(id);
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
@@ -125,14 +137,85 @@ describe('UsersService', () => {
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { id: 999 },
       });
+    });  
+  });
+
+
+  describe('create', () => {   
+    it('should create a new user and return it' , async () => {
+         const createUserDto:CreateUserDto={
+          username:"tes888888",
+          name:"tes888888",
+          password:"1111",
+          email:"tes888888@gmail.com"
+        };    
+        const hashRounds=10;
+        const hashedPassword: any = "XXXXXXXXXXXXXX"; // 이렇게 바꿔주세요
+        const result = {
+          id: 1,
+          email: createUserDto.email,
+          password: hashedPassword as string,
+          name: createUserDto.name,
+          username: createUserDto.username
+        };
+
+        jest.spyOn(mockUserRepository, 'findOne')
+        .mockResolvedValueOnce(null) // username 중복 체크
+        .mockResolvedValueOnce(null) // email 중복 체크
+        .mockResolvedValueOnce(result); // 유저 생성 후 조회
+
+        jest.spyOn(mockConfigService, 'get').mockReturnValue(hashRounds);      
+        jest.spyOn(bcrypt, 'hash').mockReturnValue(hashedPassword);
+        jest.spyOn(mockUserRepository, 'save').mockResolvedValue(undefined); // save는 결과를 리턴하지 않거나 undefined를 리턴
+          
+        const createUser=await userService.create(createUserDto);
+        expect(createUser).toEqual(result);
+
+        // expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(1, { where: { email: createUserDto.email } });
+        // expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(2, { where: { email: createUserDto.email } });
+     
+        expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, hashRounds);
+        // expect(mockUserRepository.save).toHaveBeenCalledWith({
+        //   email: createUserDto.email,
+        //   password: hashedPassword as string,
+        // })
+    })
+
+    it('should throw a BadRequestException if email already exists', async () => {
+      const createUserDto: CreateUserDto = {
+        username: 'XXXX',
+        name: 'test',
+        password: 'XXXX',
+        email: 'test@example.com',
+      };
+      
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue({
+        id: 1,
+        email: createUserDto.email,
+      });
+
+      await expect(userService.create(createUserDto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+
+  describe('update', () => {
+    it('should update a user if it exists and ruturn the updated user ', async () => {
+        const updateUserDto:UpdateUserDto={
+          email:"tes888888@gmail.com",
+          password:"1111",
+        }
 
     });
 
-  
+    
+
   });
 
 
 });
+
+
 
 
 

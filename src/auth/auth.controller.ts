@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Headers, Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get,  Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entities/user.entity';
 import type{ Request as ExpressRequest } from 'express';
@@ -18,7 +18,7 @@ export class AuthController {
   @Post('register')
   @ApiBasicAuth()
   registerUser(
-    @Headers('authorization') token: string,
+    @Authorization() token: string,
     @Body() body: { username: string; name: string },
   ) {
     console.log('body', body);
