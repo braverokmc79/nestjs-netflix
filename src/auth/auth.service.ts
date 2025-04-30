@@ -48,6 +48,7 @@ export class AuthService {
   parseBasicToken(rawToken: string) {
     //1)토큰을  '' 기준으로 스프릿 한 후 토큰 값만 추출하기
     const basicSplit = rawToken.split(' ');
+    
     if (basicSplit.length !== 2) {
       throw new BadRequestException('토큰 포멧이 잘못되었습니다.');
     }
@@ -74,7 +75,7 @@ export class AuthService {
 
 
   async parseBearerToken(rawToken: string, isRefreshToken: boolean) {
-    try {
+  
       const bearerSplit = rawToken.split(' ');
     
       if (bearerSplit.length !== 2) {
@@ -86,26 +87,31 @@ export class AuthService {
         throw new BadRequestException('Bearer 토큰이 아닙니다.');
       }
     
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
-        secret: this.configService.getOrThrow<string>(
-          isRefreshToken ? envVariableKeys.refreshTokenSecret : envVariableKeys.accessTokenSecret),
-      });
-    
-   
-      if(isRefreshToken){
-        if(payload.type !== 'refresh') {
-          throw new BadRequestException('Refresh 토큰을 입력해 주세요.!');
+      try {
+        const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+          secret: this.configService.getOrThrow<string>(
+            isRefreshToken
+              ? envVariableKeys.refreshTokenSecret
+              : envVariableKeys.accessTokenSecret,
+          ),
+        });
+
+        if (isRefreshToken) {
+          if (payload.type !== 'refresh') {
+            throw new BadRequestException('Refresh 토큰을 입력해 주세요.!');
+          }
+        } else {
+          if (payload.type !== 'access') {
+            throw new BadRequestException('Access 토큰을 입력해 주세요.!');
+          }
         }
-      }else{
-        if(payload.type !== 'access') {
-          throw new BadRequestException('Access 토큰을 입력해 주세요.!');
-        }
-     }
-      return payload;
-    } catch (error) { 
-      console.log("👺👺👺👺👺");     
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.'+(error as Error).message);
-    }
+        return payload;
+      } catch (error) {
+        console.log('👺👺👺👺👺');
+        throw new UnauthorizedException(
+          '유효하지 않은 토큰입니다.' + (error as Error).message,
+        );
+      }
    
   }
   
@@ -127,7 +133,6 @@ export class AuthService {
 
     await this.userService.create(createUserDto)
 
-    return this.usersRepository.findOne({ where: { email } });
   }
 
 
