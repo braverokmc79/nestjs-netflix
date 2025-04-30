@@ -53,6 +53,12 @@ describe('UsersService', () => {
     userService = module.get<UsersService>(UsersService);
   });
 
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  
   // 서비스 인스턴스가 정상적으로 생성됐는지 확인하는 기본 테스트
   it('should be defined', () => {
     expect(userService).toBeDefined();
@@ -206,11 +212,63 @@ describe('UsersService', () => {
           password:"1111",
         }
 
+        const hashRounds=10;
+        const hashedPassword: string = "XXXXXXXXXXXXXX";
+
+        const user ={
+          id:1,
+          email:updateUserDto.email,
+
+        }
+
+        jest.spyOn(mockUserRepository, 'findOne').mockResolvedValueOnce(user);
+
+        jest.spyOn(mockConfigService, 'get').mockReturnValue(hashRounds);
+        jest.spyOn(bcrypt, 'hash').mockImplementation((password, rounds) => hashedPassword);
+     
+        jest.spyOn(mockUserRepository, 'update').mockResolvedValue(undefined);
+        jest.spyOn(mockUserRepository, 'findOne').mockResolvedValueOnce({
+          ...user,
+          password: hashedPassword,
+        });
+
+        const result = await userService.update(1, updateUserDto);
+        expect(result).toEqual({
+          ...user,
+          password: hashedPassword,
+        });
+
+        expect(bcrypt.hash).toHaveBeenCalledWith(updateUserDto.password, hashRounds);
+        expect(mockUserRepository.update).toHaveBeenCalledWith(
+          { id: 1 },
+          {
+            ...updateUserDto,
+            password: hashedPassword,
+          }
+        );
+
+     
+
     });
 
-    
+    it('should throw NotFoundException if user not found', async () => {
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue(null);
 
+      await expect(userService.update(2, { email: 'notfound@test.com' })).rejects.toThrow(NotFoundException);
+
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 2 },
+      });
+      expect(mockUserRepository.update).not.toHaveBeenCalled();
+    });
   });
+
+
+
+
+  
+
+
 
 
 });
