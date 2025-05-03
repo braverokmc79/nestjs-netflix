@@ -252,6 +252,7 @@ describe('UsersService', () => {
     });
 
     it('should throw NotFoundException if user not found', async () => {
+  // jest.spyOn을 사용하여 mockUserRepository의 findOne 메서드를 호출할 때 항상 null을 반환하도록 설정합니다.
       jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue(null);
 
       await expect(userService.update(2, { email: 'notfound@test.com' })).rejects.toThrow(NotFoundException);
@@ -264,9 +265,6 @@ describe('UsersService', () => {
   });
 
 
-
-
-  
 
 
 

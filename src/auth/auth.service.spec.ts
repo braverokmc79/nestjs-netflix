@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { Role, User } from 'src/users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-
+import * as bcrypt from 'bcryptjs';
 
 
 const mockUserRepository = {
@@ -204,10 +204,172 @@ describe('AuthService', () => {
 
 
 
-  describe("")
 
+    describe("registerUser", ()=>{
+      const rowToken ="basic aaaa";
+      const user={
+        email:"test@codefactory.ai",
+        password:"1111",
+        username:"test",
+        name:"test",
+      }
+
+      it("should register a new user", async ()=>{
+        jest.spyOn(authService, "parseBasicToken").mockReturnValue(user);     
+        // 사용자 없음 → 등록 가능
+        jest.spyOn(mockUserRepository, "findOne").mockResolvedValueOnce(undefined);
+
+        //const createSpy = jest.spyOn(userService, "create").mockResolvedValue(undefined)
+        
+        const result =await authService.registerUser(rowToken, user);        
+        expect(authService.parseBasicToken).toHaveBeenCalledWith(rowToken);
+         expect(userService.create).toHaveBeenCalledWith(user);         
+         expect(result).toBeUndefined(); 
+      })
+
+
+      it("should throw an error if user already exists", async ()=>{        
+        jest.spyOn(authService, "parseBasicToken").mockReturnValue(user);     
+         // 사용자 있음 → 예외 발생 
+        jest.spyOn(mockUserRepository, "findOne").mockResolvedValueOnce(user);
+
+
+        await expect(authService.registerUser(rowToken, {
+          username: user.username,
+          name: user.name,
+        })).rejects.toThrow(BadRequestException);
+
+      })
+
+     
+  });
+
+
+
+  describe("authenticate", ()=>{
+    it('should authenticate a user with correct credentials', async () => {
+        const email ="text@example.com";
+        const password = "1234";
+        const user = {
+          email: email,
+          password: "hadedPassword",
+        };
+        
+        jest.spyOn(mockUserRepository, "findOne").mockResolvedValueOnce(user) ;                
+        jest.spyOn(bcrypt, "compare").mockImplementation((password, hashedPassword) => true);
+
+        const result=await authService.authenticate(email, password);
+
+        expect(usersRepository.findOne).toHaveBeenLastCalledWith({where:{email}});
+        expect(bcrypt.compare).toHaveBeenCalledWith(password, "hadedPassword");
+        
+        expect(result).toEqual(user);        
+    });
+
+    it('shud authenticate a user not found', () =>{
+      const email="sdf";
+      const password="sdfasd";
+      void expect(authService.authenticate(email, password)).rejects.toThrow(BadRequestException,);
+
+    })
+
+    it('should  throw an error for incorrect password', async () => {
+      const email ="text@example.com";
+      const password = "1234";
+      const user = {
+        email: email,
+        password: "hadedPassword",
+      };
+      
+      jest.spyOn(mockUserRepository, "findOne").mockResolvedValueOnce(user) ;                
+      jest.spyOn(bcrypt, "compare").mockImplementation((password, hashedPassword) => false);
+
+      void expect(authService.authenticate(email, password)).rejects.toThrow(BadRequestException);
+          
+   });
+
+  })
+
+
+
+  describe("issueToken", ()=>{
+    const user ={id:1, role:Role.user};
+    const token ="token";
+    beforeEach(()=>{
+      jest.spyOn(mockConfigService,"get").mockReturnValue("secret");
+      jest.spyOn(jwtService, "signAsync").mockResolvedValue(token);
+    });
+
+
+    it('should issue an access token', async ()=>{
+        const result =await authService.issueToken(user as User, false);
   
-  
+        expect(jwtService.signAsync).toHaveBeenCalledWith({
+          sub: user.id,
+          role: user.role,
+          type: "access"
+        },{
+          secret: "secret",
+          expiresIn: 30000000
+        });
+        expect(result).toBe(token);  
+    })
+
+
+    
+    it('should issue an refresh token', async ()=>{
+      const result =await authService.issueToken(user as User, true);
+
+      expect(jwtService.signAsync).toHaveBeenCalledWith({
+        sub: user.id,
+        role: user.role,
+        type: "refresh"
+      },{
+        secret: "secret",
+        expiresIn: "14d"
+      });
+      expect(result).toBe(token);  
+    })
+
+  })
+
+
+
+  describe("login", () =>{
+     it("should login a user and return tokens", async()=>{
+        const rawToken ="Basic asdf";
+        const email = "test@codefactory.ai";
+        const password = "1234";
+        const user={
+          id:1,role :Role.admin,
+        }
+
+        jest.spyOn(authService, "parseBasicToken").mockReturnValue({
+          email,
+          password,
+        });
+
+        jest.spyOn(authService, "authenticate").mockResolvedValue(user as User);
+        jest.spyOn(authService, "issueToken").mockResolvedValue("mocked.token");
+        
+        const result =await authService.login(rawToken);
+        
+        expect(authService.parseBasicToken).toHaveBeenCalledWith(rawToken);
+        expect(authService.authenticate).toHaveBeenCalledWith(email, password);
+        expect(authService.issueToken).toHaveBeenCalledWith(user, false);
+        expect(authService.issueToken).toHaveBeenCalledWith(user, true);
+      
+        expect(result).toEqual({
+          accessToken: "mocked.token",
+          refreshToken: "mocked.token"
+        });
+
+     })
+
+
+  })
+
+
 
 
 

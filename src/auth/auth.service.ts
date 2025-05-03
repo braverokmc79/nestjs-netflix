@@ -107,7 +107,7 @@ export class AuthService {
         }
         return payload;
       } catch (error) {
-        console.log('👺👺👺👺👺');
+        //console.log('👺👺👺👺👺');
         throw new UnauthorizedException(
           '유효하지 않은 토큰입니다.' + (error as Error).message,
         );
@@ -130,8 +130,10 @@ export class AuthService {
     createUserDto.password = password;
     createUserDto.username = body?.username|| "";
     createUserDto.name = body?.name|| "";
-
-    await this.userService.create(createUserDto)
+    await this.userService.create(createUserDto);
+    //const result = 
+    // console.log("회원 가입 반환값  :",result);
+    // return result
 
   }
 
