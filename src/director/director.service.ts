@@ -12,6 +12,10 @@ export class DirectorService {
     private readonly directorRepository: Repository<Director>,
   ) {}
 
+  async create(createDirectorDto: CreateDirectorDto) {
+    return await this.directorRepository.save(createDirectorDto);
+  }
+
   async findAll(): Promise<Director[]> {
     try {
       return await this.directorRepository.find();
@@ -32,9 +36,7 @@ export class DirectorService {
     return director;
   }
 
-  async create(createDirectorDto: CreateDirectorDto) {
-    return await this.directorRepository.save(createDirectorDto);
-  }
+ 
 
   async update(id: number, updateDirectorDto: UpdateDirectorDto) {
     const director = await this.directorRepository.findOne({
