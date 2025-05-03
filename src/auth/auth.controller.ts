@@ -25,15 +25,15 @@ export class AuthController {
     return this.authService.registerUser(token, body);
   }
 
-  
+
 
   @Public()
   @Post('login')
   @ApiBasicAuth()
-  loginUser(@Authorization() token: string) {
-    console.log('*** token', token);
+  loginUser(@Authorization() token: string) {    
     return this.authService.login(token);
   }
+  
 
   @Public()
   @Post('token/block')

@@ -67,10 +67,16 @@ describe('AuthController', () => {
          accessToken: "mocked.access.token"
       }
 
-      jest.spyOn(authController, "loginUser").mockResolvedValue(result);
+       // authService.login을 mock 처리
+      jest.spyOn(authService, 'login').mockResolvedValue(result);
 
+       // 테스트 대상은 controller.loginUser(token)
       await expect(authController.loginUser(token)).resolves.toEqual(result);
-      //expect(authService.login(token)).toHaveBeenCalledWith(token);
+
+      
+      // authService.login이 올바른 인자로 호출되었는지 확인
+      expect(authService.login).toHaveBeenCalledWith(token);
+
     });    
   });
 
@@ -109,7 +115,7 @@ describe('AuthController', () => {
 
         const result=await authController.rotateAccessToken(mockReq);
 
-        expect(authService.issueToken).toHaveBeenNthCalledWith(user,false);
+        expect(authService.issueToken).toHaveBeenCalledWith(user,false);
         expect(result).toEqual({accessToken});
 
     });
@@ -156,7 +162,7 @@ describe('AuthController', () => {
       
       const mockUser ={id:1, name:"john"}
       const mockReq = {
-        user: "a",
+        user:mockUser        ,
         get: jest.fn(),
         header: jest.fn(),
         accepts: jest.fn(),
