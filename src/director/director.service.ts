@@ -17,15 +17,7 @@ export class DirectorService {
   }
 
   async findAll(): Promise<Director[]> {
-    try {
-      return await this.directorRepository.find();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to find all directors: ${error.message}`);
-      } else {
-        throw new Error(`Failed to find all directors`);
-      }
-    }
+     return await this.directorRepository.find();
   }
 
   async findOne(id: number) {
@@ -36,8 +28,6 @@ export class DirectorService {
     return director;
   }
 
- 
-
   async update(id: number, updateDirectorDto: UpdateDirectorDto) {
     const director = await this.directorRepository.findOne({
       where: { id },
@@ -47,22 +37,22 @@ export class DirectorService {
       throw new NotFoundException(`존재하지 않는 ${id} 입니다.`);
     }
 
-     await this.directorRepository.update(
-      { id },
-      {...updateDirectorDto}
-    );
-    
-    return await this.directorRepository.findOne({where: { id }});
+    await this.directorRepository.update({ id }, { ...updateDirectorDto });
+
+    return await this.directorRepository.findOne({ where: { id } });
   }
 
   async remove(id: number) {
     const director = await this.directorRepository.findOne({
-          where: { id },
-     });
+      where: { id },
+    });
     if (!director) {
-          throw new NotFoundException(`존재하지 않는 ${id} 입니다.`);
+      throw new NotFoundException(`존재하지 않는 ${id} 입니다.`);
     }
+    await this.directorRepository.delete(id);
     
-    return await this.directorRepository.delete(id);
+    return id;
   }
+
+
 }
