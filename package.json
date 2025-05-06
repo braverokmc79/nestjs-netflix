@@ -23,7 +23,12 @@
     "test:auth": "jest --testPathPattern=src/auth --coverage --collectCoverageFrom='src/auth/**/*.{ts,tsx}'  ",
     "test:auth:watch": "jest --watch --testPathPattern=src/auth --coverage --collectCoverageFrom='src/auth/**/*.{ts,tsx}'  ",
     "test:director": "jest --testPathPattern=src/director --coverage --collectCoverageFrom='src/director/**/*.{ts,tsx}'  ",
-    "test:director:watch": "jest --watch --testPathPattern=src/director --coverage --collectCoverageFrom='src/director/**/*.{ts,tsx}'  "
+    "test:director:watch": "jest --watch --testPathPattern=src/director --coverage --collectCoverageFrom='src/director/**/*.{ts,tsx}'  ",
+    "test:genre": "jest --testPathPattern=src/genre --coverage --collectCoverageFrom='src/genre/**/*.{ts,tsx}'  ",
+    "test:genre:watch": "jest --watch --testPathPattern=src/genre --coverage --collectCoverageFrom='src/genre/**/*.{ts,tsx}'  ",
+    "test:movies": "jest --testPathPattern=src/movies --coverage --collectCoverageFrom='src/movies/**/*.{ts,tsx}'  ",
+    "test:movies:watch": "jest --watch --testPathPattern=src/movies --coverage --collectCoverageFrom='src/movies/**/*.{ts,tsx}'  "
+
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
