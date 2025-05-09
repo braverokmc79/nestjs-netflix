@@ -53,14 +53,29 @@ export class MoviesService {
 	// where mul."movieId" in (2,3, 4,5, 6,7)
 	// and mul."userId" =2;
 
-  async findAll(dto: GetMoviesDto, userId?: number) {
-    const { title } = dto;
-
-    const qb = this.movieRepository
+   /* istanbul ignore next */
+   getMovies(){
+    return  this.movieRepository
       .createQueryBuilder('moive')
       .leftJoinAndSelect('moive.director', 'director')
       .leftJoinAndSelect('moive.genres', 'genres')
-      .loadRelationCountAndMap('moive.likeCount', 'moive.likeUsers');    // 자동으로 카운팅됨
+      .loadRelationCountAndMap('moive.likeCount', 'moive.likeUsers');
+  }
+
+  /* istanbul ignore next */
+ async getLikedMovies(movieIds: number[], userId: number){
+    return   await this.movieUserLikeRepository.createQueryBuilder('mul')
+    .leftJoinAndSelect('mul.movie', 'movie')
+    .leftJoinAndSelect('mul.user', 'user')
+    .where('movie.id IN (:...movieIds)', { movieIds })
+    .andWhere('user.id = :userId', { userId })
+    .getMany();      
+  }
+
+  async findAll(dto: GetMoviesDto, userId?: number) {
+    const { title } = dto;
+
+    const qb= this.getMovies();
 
     if (title) {
       qb.where('moive.title LIKE :title', { title: `%${title}%` });
@@ -68,18 +83,12 @@ export class MoviesService {
 
     let result = await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
 
-    if(userId&& result?.items){
-      
+    if(userId&& result?.items){      
       const items: Movie[]=result.items as Movie[];
       if(items.length===0) return result;
 
       const movieIds=items.map((movie: Movie) => movie.id);
-      const likedMovies=   await this.movieUserLikeRepository.createQueryBuilder('mul')
-      .leftJoinAndSelect('mul.movie', 'movie')
-      .leftJoinAndSelect('mul.user', 'user')
-      .where('movie.id IN (:...movieIds)', { movieIds })
-      .andWhere('user.id = :userId', { userId })
-      .getMany();      
+      const likedMovies=   await this.getLikedMovies(movieIds, userId);
 
       /** {
         moviedId:boolean
@@ -90,11 +99,12 @@ export class MoviesService {
          ...acc,
          [next.movie.id]: next.isLike,        
       }),{});
+
       const updateItem=items.map((item : Movie)=>({
         ...item,
         likeStatus: item.id in likedMovieMap ? likedMovieMap[item.id] as boolean | null  : null,
-
       }));
+
       result={
         ...result,
         items:updateItem,

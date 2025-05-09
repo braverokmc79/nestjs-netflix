@@ -125,11 +125,15 @@ export class AuthService {
     if (user) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
     }
+    
+    const username= body?.username || "";
+    const name= body?.name || "";
+
     const createUserDto =new CreateUserDto();
     createUserDto.email = email;
     createUserDto.password = password;
-    createUserDto.username = body?.username|| "";
-    createUserDto.name = body?.name|| "";
+    createUserDto.username = username;
+    createUserDto.name = name;
     await this.userService.create(createUserDto);
     //const result = 
     // console.log("회원 가입 반환값  :",result);
@@ -138,6 +142,7 @@ export class AuthService {
   }
 
 
+  
 
   async authenticate(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });

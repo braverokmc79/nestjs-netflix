@@ -117,5 +117,54 @@ describe('UsersController', () => {
   })
 
 
+  describe("update", ()=>{
+    it("should return a list of users", async ()=>{
+      const user = {
+        id: 1,
+        email: "test@codefactory.ai",
+        password: "XXXXXX",
+        name: "test",
+        username: "XXXX",
+        role: Role.admin, 
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdMovies: [],
+        likedMovies: [],
+        version: 1,
+      };
+      const updateUserDto = {
+        email: "test@codefactory.ai",
+        password: "XXXXXX",
+        name: "test",
+        username: "XXXX",
+        role: Role.admin, 
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdMovies: [],
+        likedMovies: [],
+        version: 1,
+      };
+      jest.spyOn(userService, 'update').mockResolvedValue(user)
+      const result =await userController.update(1, updateUserDto);
 
+      await expect(userService.update(1, updateUserDto)).resolves.toEqual(result);
+      expect(result).toEqual(user);
+    })
+  })
+
+
+  describe("remove", ()=>{
+    it("should return a list of users", async ()=>{
+
+      const id = 1;
+      jest.spyOn(userService, 'remove').mockResolvedValue(id);
+
+      const result =await userController.remove(id);
+      await expect(userService.remove(id)).resolves.toEqual(id);
+      expect(result).toEqual(id);
+      }
+    );
+  })
+
+  
 });

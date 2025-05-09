@@ -16,10 +16,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:cov:watch": "jest --watchAll --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:user":"jest --testPathPattern=src/user --coverage --collectCoverageFrom='src/users/**/*.{ts,tsx}'  ",
-    "test:user:watch":"jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom='src/users/**/*.{ts,tsx}'  ",
+    "test:user": "jest --testPathPattern=src/user --coverage --collectCoverageFrom='src/users/**/*.{ts,tsx}'  ",
+    "test:user:watch": "jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom='src/users/**/*.{ts,tsx}'  ",
     "test:auth": "jest --testPathPattern=src/auth --coverage --collectCoverageFrom='src/auth/**/*.{ts,tsx}'  ",
     "test:auth:watch": "jest --watch --testPathPattern=src/auth --coverage --collectCoverageFrom='src/auth/**/*.{ts,tsx}'  ",
     "test:director": "jest --testPathPattern=src/director --coverage --collectCoverageFrom='src/director/**/*.{ts,tsx}'  ",
@@ -28,7 +29,6 @@
     "test:genre:watch": "jest --watch --testPathPattern=src/genre --coverage --collectCoverageFrom='src/genre/**/*.{ts,tsx}'  ",
     "test:movies": "jest --testPathPattern=src/movies --coverage --collectCoverageFrom='src/movies/**/*.{ts,tsx}'  ",
     "test:movies:watch": "jest --watch --testPathPattern=src/movies --coverage --collectCoverageFrom='src/movies/**/*.{ts,tsx}'  "
-
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
@@ -63,6 +63,8 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@automock/adapters.nestjs": "^2.1.0",
+    "@automock/jest": "^2.1.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -97,9 +99,9 @@
       "json",
       "ts"
     ],
-    "roots":[
-        "src"
-    ]  ,
+    "roots": [
+      "src"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -120,8 +122,12 @@
       "decorator.ts",
       "bearer-token.middleware copy.ts",
       "auth.guard.ts",
-      "rbac.guard.ts"
-    ],  
+      "rbac.guard.ts",
+      "pipe.ts",
+      "common/*",
+      "main.ts",
+      "index.d.ts"
+    ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
