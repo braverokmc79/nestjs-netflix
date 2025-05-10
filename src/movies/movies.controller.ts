@@ -78,7 +78,7 @@ export class MoviesController {
 
   @Get(':id')
   @Public()
-  getMovie(@Param('id', ParseIntPipe) id: string) {
+  getMovie(@Param('id', ParseIntPipe) id: number) {
     return this.moviesService.findOne(+id);
   }
 
@@ -123,7 +123,7 @@ export class MoviesController {
   @Patch(':id')
   @RBAC(Role.admin)
   patchMovie(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateMovieDto,
   ) {
     return this.moviesService.update(+id, body);
@@ -131,7 +131,7 @@ export class MoviesController {
 
   @Delete(':id')
   @RBAC(Role.admin)
-  async deleteMovie(@Param('id', ParseIntPipe) id: string) {
+  async deleteMovie(@Param('id', ParseIntPipe) id: number) {
     console.log(`Deleting movie with ID: ${id}`);
     await this.moviesService.remove(+id);
 
