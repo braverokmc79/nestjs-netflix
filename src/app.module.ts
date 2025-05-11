@@ -53,7 +53,7 @@ import * as customParseFormat from 'dayjs/plugin/customParseFormat'
       }),
     }),
     TypeOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({  //postgres , sqlite
+      useFactory: (configService: ConfigService) => ({
         type: configService.get<string>('DB_TYPE') as 'postgres',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
