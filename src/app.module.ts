@@ -38,9 +38,9 @@ import * as customParseFormat from 'dayjs/plugin/customParseFormat'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? '.test.env' : '.env',
       validationSchema: Joi.object({
-        NESTJS_ENV: Joi.string().valid('dev', 'prod').required(),
+        NESTJS_ENV: Joi.string().valid('test', 'dev', 'prod').required(),
         DB_TYPE: Joi.string().required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.string().required(),

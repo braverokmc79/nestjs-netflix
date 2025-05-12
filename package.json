@@ -18,8 +18,9 @@
     "test:integration": "jest --testRegex='.*integration\\.spec\\.ts$'",
     "test:cov": "jest --coverage",
     "test:cov:watch": "jest --watchAll --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./jest-e2e.json",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",    
+    "test:e2e": "cross-env NODE_ENV=test jest --config ./jest-e2e.json",
+
 
 
     "test:user": "jest --testPathPattern=src/user --coverage --collectCoverageFrom='src/users/**/*.{ts,tsx}'  ",
@@ -82,6 +83,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
     "@types/winston": "^2.4.4",
+    "cross-env": "^7.0.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

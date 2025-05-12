@@ -40,3 +40,24 @@ npx prettier --write .
 $ pnpm i @nestjs/config joi @nestjs/typeorm typeorm pg
 
 
+
+
+
+(1) 연결 권한 (CONNECT)
+GRANT CONNECT ON DATABASE test TO nestjsnetflex;
+
+
+(2) 스키마에 대한 사용 권한 (기본 public 스키마 기준)
+GRANT USAGE ON SCHEMA public TO nestjsnetflex;
+
+
+(3) 모든 테이블에 대한 SELECT, INSERT, UPDATE, DELETE 권한
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nestjsnetflex;
+
+
+📌 예시로 한 줄로 실행
+GRANT ALL PRIVILEGES ON DATABASE test TO nestjsnetflex;
+
+
+
+
