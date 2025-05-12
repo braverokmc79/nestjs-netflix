@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from 'src/app.module';
-
 import { Director } from 'src/director/entity/director.entity';
 import { Movie } from './entity/movie.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
@@ -11,7 +10,7 @@ import { MovieDetail } from './entity/movie-detail.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { Role, User } from 'src/users/entities/user.entity';
-import { Err } from 'joi';
+
 
 describe('MoviesController (e2e)', () => {
   let app: INestApplication;
