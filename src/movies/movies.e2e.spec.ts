@@ -11,6 +11,7 @@ import { MovieDetail } from './entity/movie-detail.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { Role, User } from 'src/users/entities/user.entity';
+import { Err } from 'joi';
 
 describe('MoviesController (e2e)', () => {
   let app: INestApplication;
@@ -152,9 +153,17 @@ describe('MoviesController (e2e)', () => {
 
   describe('[GET /movies]', ()=>{
     it('should return all movies', async() => {
-        const {body, statusCode, error} =await request(app.getHttpServer()).get('/movies')
-          .set('Authorization', `Bearer ${token}`); // 토큰 설정
 
+      interface GetMoviesResponse {
+        body :{
+              items: Movie[];
+        },
+        statusCode: number;
+        error: Error        
+      }
+        const {body, statusCode, error} =await request(app.getHttpServer()).get('/movies')
+          .set('Authorization', `Bearer ${token}`) as GetMoviesResponse; // 토큰 설정
+        if(error) console.log(error);
       
         expect(statusCode).toBe(200);
         expect(body).toHaveProperty("items");
@@ -170,8 +179,12 @@ describe('MoviesController (e2e)', () => {
 
   describe('[GET /movies/recent]', ()=>{
     it('should get recent movies', async()=>{
+      interface MoviesRecentResponse {
+        body :Movie,
+        statusCode: number        
+      }
         const {body, statusCode} =await request(app.getHttpServer()).get('/movies/recent')
-          .set('authorization', `Bearer ${token}`);
+          .set('authorization', `Bearer ${token}`)  as MoviesRecentResponse;
 
        expect(statusCode).toBe(200);
        expect(body).toHaveLength(10);
@@ -182,11 +195,13 @@ describe('MoviesController (e2e)', () => {
   describe('[GET /movies/{id}]',()=>{
      it('should get movie by id', async() =>{
         const movieId =movies[0].id;
-
+      interface MovieResponse {
+        body :Movie,
+        statusCode: number        
+      }
         const {body, statusCode} =await request(app.getHttpServer())
         .get(`/movies/${movieId}`)
-        .set('authorization', `Bearer ${token}`); // 토큰 설정
-
+        .set('authorization', `Bearer ${token}`) as MovieResponse; // 토큰 설정
 
         expect(statusCode).toBe(200);
         expect(body.id).toBe(movieId);
@@ -195,14 +210,226 @@ describe('MoviesController (e2e)', () => {
 
      it("should throw 404 error if movie does not exist", async () =>{
          const movieId= 99999;
-         const {body,statusCode} = await request(app.getHttpServer())
+          interface MovieResponse {
+            body :Movie,
+            statusCode: number        
+          }
+         const {statusCode} = await request(app.getHttpServer())
          .get(`/movies/${movieId}`)
-         .set('authorization', `Bearer ${token}`); // 토큰 설정
+         .set('authorization', `Bearer ${token}`) as MovieResponse; // 토큰 설정
 
          expect(statusCode).toBe(404);
          
      });
   });
+
+
+  describe('[POST /movies]', ()=>{
+    interface VideoResponse {
+       fileName: string;
+      }
+    it('should create movie',async ()=>{
+        const {body} =await request(app.getHttpServer())
+        .post('/common/video')
+        .set('authorization', `Bearer ${token}`)     
+        .attach('video', Buffer.from('test'), 'movie.mp4')
+        .expect(201) as { body: VideoResponse };
+
+        const dto={
+          title: 'Test Movie',
+          detail: 'A Test Movie Detail',
+          directorId: directors[0].id,
+          genreIds: genres.map(x => x.id),
+          movieFileName: body.fileName,        
+        }
+      
+       interface CreateMovieResponse {
+        body :{
+              title: string;
+              detail: { detail: string };
+              director: { id: number };
+              genres: { id: number }[];
+              movieFilePath: string;
+        },
+        statusCode: number        
+      }
+      const { body : createBody, statusCode } = await request(app.getHttpServer())
+        .post(`/movie`)
+        .set('authorization', `Bearer ${token}`)
+        .send(dto) as CreateMovieResponse;
+
+      expect(statusCode).toBe(201);
+
+      expect(createBody).toBeDefined();
+      expect(createBody.title).toBe(dto.title);
+      expect(createBody.detail.detail).toBe(dto.detail);
+      expect(createBody.director.id).toBe(dto.directorId);
+      expect(createBody.genres.map(x => x.id)).toEqual(dto.genreIds);
+      expect(createBody.movieFilePath).toContain(body.fileName);
+
+    });
+
+  });
+
+
+   describe('[PATCH /movie/{id}]', () => {
+    it('should update movie if exists', async () => {
+      const dto = {
+        title: 'Updated Test Movie',
+        detail: 'Updated Test Movie Detail',
+        directorId: directors[0].id,
+        genreIds: [genres[0].id],
+      };
+
+      const movieId = movies[0].id;
+
+       interface UpdateMovieResponse {
+        body :{
+              title: string;
+              detail: { detail: string };
+              director: { id: number };
+              genres: { id: number }[];
+              movieFilePath: string;
+        },
+        statusCode: number        
+      }
+
+
+      const { body, statusCode } = await request(app.getHttpServer())
+        .patch(`/movie/${movieId}`)
+        .set('authorization', `Bearer ${token}`)
+        .send(dto) as UpdateMovieResponse;
+
+      expect(statusCode).toBe(200);
+
+      expect(body).toBeDefined();
+      expect(body.title).toBe(dto.title);
+      expect(body.detail.detail).toBe(dto.detail);
+      expect(body.director.id).toBe(dto.directorId);
+      expect(body.genres.map(x => x.id)).toEqual(dto.genreIds);
+    });
+  });
+
+
+
+
+
+  describe('[DELETE /movie/{id}]', () => {
+    it('should delete existing movie', async () => {
+      const movieId = movies[0].id;
+     interface DeleteMovieResponse {
+        body :{
+              title: string;
+              detail: { detail: string };
+              director: { id: number };
+              genres: { id: number }[];
+              movieFilePath: string;
+        },
+        statusCode: number        
+      }
+      const { statusCode } = await request(app.getHttpServer() )
+        .patch(`/movie/${movieId}`)
+        .set('authorization', `Bearer ${token}`) as DeleteMovieResponse ;
+
+      expect(statusCode).toBe(200);
+    });
+
+
+
+    it('should throw 404 error if movie does not exist', async () => {
+      const movieId = 99999;
+
+      const { statusCode } = await request(app.getHttpServer())
+        .patch(`/movie/${movieId}`)
+        .set('authorization', `Bearer ${token}`);
+
+      expect(statusCode).toBe(404);
+    });
+  });
+
+  describe('[POST /movie/{id}/like]', () => {
+    it('should like a movie', async () => {
+      const movieId = movies[1].id;
+
+      interface likeMovieResponse {
+        body :{
+              isLike: boolean;            
+        },
+        statusCode: number        
+      }
+      const { statusCode, body } = await request(app.getHttpServer())
+        .post(`/movie/${movieId}/like`)
+        .set('authorization', `Bearer ${token}`) as likeMovieResponse;
+
+      expect(statusCode).toBe(201);
+
+      expect(body).toBeDefined();
+      expect(body.isLike).toBe(true);
+    });
+
+    it('should cancel like a movie', async () => {
+      const movieId = movies[1].id;
+
+      interface cancelLikeMovieResponse {
+        body :{
+              isLike: boolean;            
+        },
+        statusCode: number        
+      }
+      const { statusCode, body } = await request(app.getHttpServer())
+        .post(`/movie/${movieId}/like`)
+        .set('authorization', `Bearer ${token}`) as cancelLikeMovieResponse;
+
+      expect(statusCode).toBe(201);
+
+      expect(body).toBeDefined();
+      expect(body.isLike).toBeNull();
+    });
+  });
+
+  describe('[POST /movie/{id}/dislike]', () => {
+    it('should dislike a movie', async () => {
+      const movieId = movies[1].id;
+
+      interface dislikeMovieResponse {
+        body :{
+              isLike: boolean;            
+        },
+        statusCode: number        
+      }
+      const { statusCode, body } = await request(app.getHttpServer())
+        .post(`/movie/${movieId}/dislike`)
+        .set('authorization', `Bearer ${token}`) as dislikeMovieResponse;
+
+      expect(statusCode).toBe(201);
+
+      expect(body).toBeDefined();
+      expect(body.isLike).toBe(false);
+    });
+
+    it('should cancel dislike a movie', async () => {
+      const movieId = movies[1].id;
+
+      interface cancelDislikeMovieResponse {
+        body :{
+              isLike: boolean;            
+        },
+        statusCode: number        
+      }
+      const { statusCode, body } = await request(app.getHttpServer())
+        .post(`/movie/${movieId}/dislike`)
+        .set('authorization', `Bearer ${token}`) as cancelDislikeMovieResponse;
+
+      expect(statusCode).toBe(201);
+
+      expect(body).toBeDefined();
+      expect(body.isLike).toBeNull();
+    });
+
+
+  });
+
+
 
 
 
