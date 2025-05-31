@@ -33,6 +33,7 @@ import * as winston from 'winston';
 import * as dayjs from 'dayjs';
 import * as weekday from 'dayjs/plugin/weekday';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat'
+import { envVariableKeys } from './common/const/env.const';
 
 @Module({
   imports: [
@@ -67,10 +68,25 @@ import * as customParseFormat from 'dayjs/plugin/customParseFormat'
           MovieUserLike,
           Director,
           Genre,
-          User,
-          
+          User,          
         ],
-        synchronize: true,
+
+
+        //synchronize는 TypeORM이 애플리케이션 실행 시 DB 스키마를 자동으로 동기화할지를 설정하는 옵션입니다
+        synchronize: configService.get<string>(envVariableKeys.env) ==='prod' ?false : true,
+        // ...(configService.get<string>(envVariableKeys.env) ==='prod' && { 
+        //   ssl: {
+        //     // SSL 연결을 사용하되, 서버의 SSL 인증서가 "신뢰할 수 없더라도" 연결을 허용하겠다
+        //     //인증서가 자체 서명(self-signed) 이거나 신뢰할 수 없는 기관(CA)에서 발급되었을 경우에도
+        //     // rejectUnauthorized: false로 설정하면 연결을 막지 않고 허용합니다.
+        //     rejectUnauthorized: false
+        //   }
+        //  }),
+
+
+        // ssl:{
+        //   rejectUnauthorized: false
+        // }
       }),
       inject: [ConfigService],
     }),
