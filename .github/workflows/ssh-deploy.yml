@@ -51,9 +51,11 @@ jobs:
 
 
       - name: Restart service via SSH 
+        env:
+         TARGET_DIR: ${{ secrets.TARGET_DIR }}
         run: |
-          echo "TARGET_DIR=${{ secrets.TARGET_DIR }}"
-          ls -al ${{ secrets.TARGET_DIR }}
+          echo "TARGET_DIR=$TARGET_DIR"
+              ls -al $TARGET_DIR
           
           ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
