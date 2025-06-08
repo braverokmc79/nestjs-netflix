@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Check directory contents
+        run: |
+          pwd
+          ls -R
+
       - name: ✅ Create .env file from secret
         run: |
           mkdir -p backend
