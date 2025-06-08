@@ -1,0 +1,56 @@
+name: CI/CD for NestJS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: ✅ Create .env file from secret
+        run: |
+          mkdir -p backend
+          echo "${{ secrets.ENV }}" > backend/.env
+          echo ".env created"
+          cat backend/.env
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build project
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.PORT }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy build to server
+        run: |
+          tar -czf backend.tar.gz backend
+          scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
+
+      - name: Restart service via SSH
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            set -e
+            sudo systemctl stop ${{ secrets.SERVICE_NAME }}
+            cd ${TARGET_DIR}
+            tar -xzf backend-latest.tar.gz
+            ln -sf ${TARGET_DIR}/backend ${TARGET_DIR}/current
+            sudo systemctl start ${{ secrets.SERVICE_NAME }}
+          EOF
