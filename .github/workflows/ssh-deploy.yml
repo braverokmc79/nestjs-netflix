@@ -49,10 +49,15 @@ jobs:
           tar -czf backend.tar.gz backend
           scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      - name: Restart service via SSH
+      - name: Restart service via SSH2
+        env:
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          PORT: ${{ secrets.PORT }}
         run: |
-          echo "TARGET_DIR=${{ secrets.TARGET_DIR }}"
-          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+          echo "Deploying to $TARGET_DIR on $HOST"
+          ssh -p "$PORT" "$USER@$HOST" << 'EOF'
             set -e
 
             export NVM_DIR="$HOME/.nvm"
@@ -62,12 +67,12 @@ jobs:
             echo "✅ Connected to remote server"
             echo "📦 Extracting build..."
 
-            mkdir -p $TARGET_DIR/backend
-            cd $TARGET_DIR
+            mkdir -p "$TARGET_DIR/backend"
+            cd "$TARGET_DIR"
             tar -xzf backend-latest.tar.gz
-            ln -sfn $TARGET_DIR/backend $TARGET_DIR/current
+            ln -sfn "$TARGET_DIR/backend" "$TARGET_DIR/current"
 
-            cd $TARGET_DIR/current
+            cd "$TARGET_DIR/current"
 
             echo "📥 Installing dependencies..."
             npm install --omit=dev
@@ -78,5 +83,4 @@ jobs:
             echo "🚀 Restarting application..."
             pm2 restart nestjs-app || pm2 start dist/main.js --name nestjs-app --env production
           EOF
-
 
