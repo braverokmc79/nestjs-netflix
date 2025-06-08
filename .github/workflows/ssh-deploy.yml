@@ -52,18 +52,31 @@ jobs:
       - name: Restart service via SSH
         run: |
           echo "TARGET_DIR=${{ secrets.TARGET_DIR }}"
-          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << EOF
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
-            export NVM_DIR="\$HOME/.nvm"
-            [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm use --lts
-            mkdir -p ${{ secrets.TARGET_DIR }}/backend
-            cd ${{ secrets.TARGET_DIR }}
+
+            echo "✅ Connected to remote server"
+            echo "📦 Extracting build..."
+
+            mkdir -p $TARGET_DIR/backend
+            cd $TARGET_DIR
             tar -xzf backend-latest.tar.gz
-            ln -sfn ${{ secrets.TARGET_DIR }}/backend ${{ secrets.TARGET_DIR }}/current
-            cd ${{ secrets.TARGET_DIR }}/current
+            ln -sfn $TARGET_DIR/backend $TARGET_DIR/current
+
+            cd $TARGET_DIR/current
+
+            echo "📥 Installing dependencies..."
             npm install --omit=dev
+
+            echo "🔨 Building project..."
             npm run build
+
+            echo "🚀 Restarting application..."
             pm2 restart nestjs-app || pm2 start dist/main.js --name nestjs-app --env production
           EOF
+
 
