@@ -54,6 +54,9 @@ jobs:
           echo "TARGET_DIR=${{ secrets.TARGET_DIR }}"
           ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << EOF
             set -e
+            export NVM_DIR="\$HOME/.nvm"
+            [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+            nvm use --lts
             mkdir -p ${{ secrets.TARGET_DIR }}/backend
             cd ${{ secrets.TARGET_DIR }}
             tar -xzf backend-latest.tar.gz
@@ -63,3 +66,4 @@ jobs:
             npm run build
             pm2 restart nestjs-app || pm2 start dist/main.js --name nestjs-app --env production
           EOF
+
