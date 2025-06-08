@@ -54,12 +54,13 @@ jobs:
         run: |
           echo "TARGET_DIR=${{ secrets.TARGET_DIR }}"
           ls -al ${{ secrets.TARGET_DIR }}
-
+          
           ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
+            mkdir -p ${TARGET_DIR}/backend
             cd ${TARGET_DIR}
             tar -xzf backend-latest.tar.gz
-            ln -sf ${TARGET_DIR}/backend ${TARGET_DIR}/current
+            ln -sfn ${TARGET_DIR}/backend ${TARGET_DIR}/current
             cd ${TARGET_DIR}/current
             npm install --omit=dev
             npm run build
