@@ -49,13 +49,15 @@ jobs:
           tar -czf backend.tar.gz backend
           scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      - name: Restart service via SSH
+      - name: Restart service via SSH 
         run: |
           ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
-            sudo systemctl stop ${{ secrets.SERVICE_NAME }}
             cd ${TARGET_DIR}
             tar -xzf backend-latest.tar.gz
             ln -sf ${TARGET_DIR}/backend ${TARGET_DIR}/current
-            sudo systemctl start ${{ secrets.SERVICE_NAME }}
+            cd ${TARGET_DIR}/current
+            npm install --omit=dev
+            npm run build
+            pm2 restart nestjs-app || pm2 start dist/main.js --name nestjs-app --env production
           EOF
