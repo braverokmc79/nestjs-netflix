@@ -59,20 +59,27 @@ jobs:
         run: |
           ssh -p "$PORT" "$USER@$HOST" << 'EOF'
             set -e
-
-            echo "✅ Connected to remote server"       
+            echo "✅ Connected to remote server"
 
             echo "📦 Extracting build..."
-            mkdir -p "$TARGET_DIR/backend"
             cd "$TARGET_DIR"
-            tar -xzf backend-latest.tar.gz
+            rm -rf backend_new
+            mkdir backend_new
+            tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1
+
+            echo "🔧 Fixing permissions..."
+            chown -R nextjs:nextjs "$TARGET_DIR/backend_new"
 
             echo "🔗 Updating symlink..."
-            ln -sfn "$TARGET_DIR/backend" "$TARGET_DIR/current"
+            ln -sfn "$TARGET_DIR/backend_new" "$TARGET_DIR/current"
 
             cd "$TARGET_DIR/current"
 
             echo "📥 Installing production dependencies..."
-    
-          EOF
+            npm install --omit=dev
 
+            echo "🔄 Restarting service..."
+            pm2 restart app || pm2 start dist/main.js --name app
+
+            echo "✅ Deployment complete."
+          EOF
