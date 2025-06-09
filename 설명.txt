@@ -60,4 +60,7 @@ GRANT ALL PRIVILEGES ON DATABASE test TO nestjsnetflex;
 
 
 
+npm install --omit=dev
 
+echo "🚀 Restarting NestJS app with PM2..."
+pm2 restart nestjs-app || pm2 start dist/main.js --name nestjs-app --env production

@@ -1,7 +1,6 @@
 {
   "name": "netflix",
   "version": "0.0.1",
-  "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -136,5 +135,8 @@
     "moduleNameMapper": {
       "src/(.*)": "<rootDir>/src/$1"
     }
-  }
+  },
+  "main": "index.js",
+  "keywords": [],
+  "description": ""
 }
