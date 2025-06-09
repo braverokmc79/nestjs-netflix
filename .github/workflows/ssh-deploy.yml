@@ -23,6 +23,7 @@ jobs:
           ls -R
 
       - name: ✅ Create .env file from secret
+        shell: bash
         run: |
           mkdir -p backend
           echo "${{ secrets.ENV }}" > backend/.env
