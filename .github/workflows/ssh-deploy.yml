@@ -24,9 +24,9 @@ jobs:
 
       - name: ✅ Create .env file from secrets
         run: |
+          mkdir -p backend
           echo "${{ secrets.ENV }}" > backend/.env
           echo ".env created in backend/"
-          cat backend/.env
 
       - name: ✅ Install backend dependencies
         working-directory: ./backend
@@ -65,13 +65,22 @@ jobs:
             mkdir backend_new
             tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1
 
-            echo "✅ Fixing permissions..."
+            echo "✅ Fixing permissions (if needed)..."
             chown -R nextjs:nextjs "$TARGET_DIR/backend_new"
 
             echo "✅ Updating symlink..."
             ln -sfn "$TARGET_DIR/backend_new" "$TARGET_DIR/current"
 
             cd "$TARGET_DIR/current"
+
+            echo "✅ Installing production dependencies..."
+            npm install --omit=dev
+
+            echo "✅ Restarting PM2 service..."
+            pm2 restart app || pm2 start dist/main.js --name app
+
+            echo "✅ 현재 실행 중인 모든 애플리케이션의 상태를 저장"
+            pm2 save
 
             echo "✅ Deployment complete."
           EOF
