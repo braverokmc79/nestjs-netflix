@@ -2,84 +2,76 @@ name: CI/CD for NestJS
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
-    runs-on: [self-hosted, nextjs-host]  #ubuntu-latest  3
+    runs-on: [self-hosted, nextjs-host]
 
     steps:
-      - name: Checkout code
+      - name: ✅ Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: ✅ Set up Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Check directory contents
+      - name: ✅ List directory contents
         run: |
           pwd
-          ls -R
+          ls -alR
 
-      - name: ✅ Create .env file from secret
-        shell: bash
+      - name: ✅ Create .env file from secrets
         run: |
-          mkdir -p backend
           echo "${{ secrets.ENV }}" > backend/.env
-          echo ".env created"
+          echo ".env created in backend/"
           cat backend/.env
 
-      - name: Install dependencies
+      - name: ✅ Install backend dependencies
         working-directory: ./backend
         run: npm install
 
-      - name: Build project
+      - name: ✅ Build backend project
         working-directory: ./backend
         run: npm run build
 
-      - name: Setup SSH key
+      - name: ✅ Setup SSH private key and known_hosts
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.PORT }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Copy build to server
+      - name: ✅ Compress and transfer build to remote server
         run: |
           tar -czf backend.tar.gz backend
-          scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
+          scp -F /dev/null -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      - name: Restart service via SSH
+      - name: ✅ Restart service on remote server
         env:
           TARGET_DIR: ${{ secrets.TARGET_DIR }}
           HOST: ${{ secrets.HOST }}
           USER: ${{ secrets.USER }}
           PORT: ${{ secrets.PORT }}
         run: |
-          ssh -p "$PORT" "$USER@$HOST" << 'EOF'
+          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
             set -e
             echo "✅ Connected to remote server"
 
-            echo "📦 Extracting build..."
+            echo "✅ Extracting build..."
             cd "$TARGET_DIR"
             rm -rf backend_new
             mkdir backend_new
             tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1
 
-            echo "🔧 Fixing permissions..."
+            echo "✅ Fixing permissions..."
             chown -R nextjs:nextjs "$TARGET_DIR/backend_new"
 
-            echo "🔗 Updating symlink..."
+            echo "✅ Updating symlink..."
             ln -sfn "$TARGET_DIR/backend_new" "$TARGET_DIR/current"
 
             cd "$TARGET_DIR/current"
-
-            echo "📥 Installing production dependencies..."
-            npm install --omit=dev
-
-            echo "🔄 Restarting service..."
-            pm2 restart app || pm2 start dist/main.js --name app
 
             echo "✅ Deployment complete."
           EOF
