@@ -48,39 +48,36 @@ jobs:
           tar -czf backend.tar.gz backend
           scp -F /dev/null -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      - name: ✅ Restart service on remote server
-        env:
-          TARGET_DIR: ${{ secrets.TARGET_DIR }}
-          HOST: ${{ secrets.HOST }}
-          USER: ${{ secrets.USER }}
-          PORT: ${{ secrets.PORT }}
+      # backend-latest.tar.gz 압축 파일을 전송 된 운영서버에서 실행처리 로직  
+      - name: ✅ Connect & Extract build
         run: |
           ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
             set -e
-            echo "✅ Connected to remote server"
-
-            echo "✅ Extracting build..."
             cd "$TARGET_DIR"
             rm -rf backend_new
             mkdir backend_new
             tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1
+          EOF
 
-            echo "✅ Fixing permissions (if needed)..."
-            chown -R nextjs:nextjs "$TARGET_DIR/backend_new"
+      - name: ✅ Fix permissions
+        run: |
+          ssh -F /dev/null -p "$PORT" "$USER@$HOST" "chown -R nextjs:nextjs '$TARGET_DIR/backend_new'"
 
-            echo "✅ Updating symlink..."
-            ln -sfn "$TARGET_DIR/backend_new" "$TARGET_DIR/current"
+      - name: ✅ Update symlink
+        run: |
+          ssh -F /dev/null -p "$PORT" "$USER@$HOST" "ln -sfn '$TARGET_DIR/backend_new' '$TARGET_DIR/current'"
 
+      - name: ✅ Install production dependencies
+        run: |
+          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
             cd "$TARGET_DIR/current"
-
-            echo "✅ Installing production dependencies..."
             npm install --omit=dev
+          EOF
 
-            echo "✅ Restarting PM2 service..."
+      - name: ✅ Restart PM2 service
+        run: |
+          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
+            cd "$TARGET_DIR/current"
             pm2 restart app || pm2 start dist/main.js --name app
-
-            echo "✅ 현재 실행 중인 모든 애플리케이션의 상태를 저장"
             pm2 save
-
-            echo "✅ Deployment complete."
           EOF

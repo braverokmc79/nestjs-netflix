@@ -34,6 +34,7 @@ import * as dayjs from 'dayjs';
 import * as weekday from 'dayjs/plugin/weekday';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat'
 import { envVariableKeys } from './common/const/env.const';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -141,6 +142,7 @@ import { envVariableKeys } from './common/const/env.const';
     GenreModule,
     AuthModule,
     UsersModule,
+    ChatModule,
   ],
   providers: [
     {
