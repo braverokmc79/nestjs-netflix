@@ -4,7 +4,7 @@ import { MovieDetail } from "./movie-detail.entity";
 import { Director } from "src/director/entity/director.entity";
 import { Genre } from "src/genre/entity/genre.entity";
 import { Transform } from "class-transformer";
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/users/entity/user.entity";
 import { MovieUserLike } from "./movie-user-like.entity";
 import { ApiProperty } from "@nestjs/swagger";
 

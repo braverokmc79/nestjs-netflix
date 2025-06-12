@@ -14,7 +14,7 @@ import { Genre } from './genre/entity/genre.entity';
 import { AuthModule } from './auth/auth.module';
 
 import { UsersModule } from './users/users.module';
-import { User } from './users/entities/user.entity';
+import { User } from './users/entity/user.entity';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
@@ -35,6 +35,8 @@ import * as weekday from 'dayjs/plugin/weekday';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat'
 import { envVariableKeys } from './common/const/env.const';
 import { ChatModule } from './chat/chat.module';
+import { Chat } from './chat/entity/chat.entity';
+import { ChatRoom } from './chat/entity/chat-room.entity';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { ChatModule } from './chat/chat.module';
           Director,
           Genre,
           User,          
+          Chat,
+          ChatRoom
         ],
 
 

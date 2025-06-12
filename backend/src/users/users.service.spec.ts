@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 // TypeORM 레포지토리 토큰을 가져오기 위한 유틸리티
 import { getRepositoryToken } from '@nestjs/typeorm';
 // User 엔티티
-import { User } from './entities/user.entity';
+import { User } from './entity/user.entity';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';

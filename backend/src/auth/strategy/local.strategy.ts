@@ -3,7 +3,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-local";
 import { AuthService } from "../auth.service";
-import { User } from "src/users/entities/user.entity"; // 실제 User 타입 위치로 조정하세요
+import { User } from "src/users/entity/user.entity"; // 실제 User 타입 위치로 조정하세요
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 export class LocalAuthGuard extends AuthGuard('local') {}

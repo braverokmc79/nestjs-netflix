@@ -6,7 +6,7 @@ import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/users/entity/user.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { CommonService } from 'src/common/common.service';
 import { CACHE_MANAGER , Cache} from '@nestjs/cache-manager';

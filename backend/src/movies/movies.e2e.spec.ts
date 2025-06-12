@@ -9,7 +9,7 @@ import { DataSource } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
 import { AuthService } from 'src/auth/auth.service';
-import { Role, User } from 'src/users/entities/user.entity';
+import { Role, User } from 'src/users/entity/user.entity';
 
 
 describe('MoviesController (e2e)', () => {

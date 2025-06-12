@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryColumn} from "typeorm";
 import { Movie } from "./movie.entity";
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/users/entity/user.entity";
 
 
 @Entity()

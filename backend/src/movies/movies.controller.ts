@@ -20,7 +20,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
-import { Role } from 'src/users/entities/user.entity';
+import { Role } from 'src/users/entity/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';

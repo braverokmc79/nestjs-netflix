@@ -1,6 +1,6 @@
 import { Body, ClassSerializerInterceptor, Controller, Get,  Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/users/entity/user.entity';
 import type{ Request as ExpressRequest } from 'express';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard} from './strategy/jwt.strategy';

@@ -13,7 +13,7 @@ import { UpdateMovieDto } from "./dto/update-movie.dto"
 
 import { NotFoundException } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
-import { User } from "src/users/entities/user.entity"
+import { User } from "src/users/entity/user.entity"
 import { MoviesService } from "./movies.service"
 
 describe('MovieService - Integration Test', () => {

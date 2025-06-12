@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Role, User } from 'src/users/entities/user.entity';
+import { Role, User } from 'src/users/entity/user.entity';
 import { ExpressLoader } from '@nestjs/serve-static';
 import { Request as ExpressRequest } from 'express';
 

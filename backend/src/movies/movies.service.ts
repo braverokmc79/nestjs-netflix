@@ -13,7 +13,7 @@ import {join} from 'path';
 import * as path from 'path';
 import {rename} from 'fs/promises';
 import { MovieUserLike } from './entity/movie-user-like.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/users/entity/user.entity';
 import { CACHE_MANAGER , Cache} from '@nestjs/cache-manager';
 
 

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy as JwtStrategyBase } from 'passport-jwt';
 import { AuthGuard } from '@nestjs/passport';
-import type { Role } from 'src/users/entities/user.entity';
+import type { Role } from 'src/users/entity/user.entity';
 import { envVariableKeys } from 'src/common/const/env.const';
 
 export interface JwtPayload {
