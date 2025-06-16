@@ -12,12 +12,12 @@ jobs:
       - name: ✅ Checkout repository
         uses: actions/checkout@v3
 
-      - name: ✅ Set up Node.js 18
+      - name: ✅ Set up Node.js 20
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: ✅ List directory contents
+      - name: ✅ List directory contents (initial)
         run: |
           pwd
           ls -alR
@@ -43,41 +43,52 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.PORT }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: ✅ Compress and transfer build to remote server
+      - name: ✅ Test SSH Connection and Confirm Remote Access
+        run: |
+          echo "Testing SSH connection to ${{ secrets.USER }}@${{ secrets.HOST }} on port ${{ secrets.PORT }}..."
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "echo '✅ SSH connection successful: $(hostname)'"
+
+      - name: ✅ Compress backend build directory
         run: |
           tar -czf backend.tar.gz backend
-          scp -F /dev/null -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      # backend-latest.tar.gz 압축 파일을 전송 된 운영서버에서 실행처리 로직  
-      - name: ✅ Connect & Extract build
+      - name: ✅ Transfer compressed build to remote server
         run: |
-          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
-            set -e
-            cd "$TARGET_DIR"
-            rm -rf backend_new
-            mkdir backend_new
-            tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1
-          EOF
+          scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
 
-      - name: ✅ Fix permissions
+      - name: ✅ Connect & Extract build (remote)
         run: |
-          ssh -F /dev/null -p "$PORT" "$USER@$HOST" "chown -R nextjs:nextjs '$TARGET_DIR/backend_new'"
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "set -e; \
+            cd '${{ secrets.TARGET_DIR }}'; \
+            rm -rf backend_new; \
+            mkdir backend_new; \
+            tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1; \
+            echo '✅ Extraction completed'"
 
-      - name: ✅ Update symlink
+      - name: ✅ Fix permissions on remote server
         run: |
-          ssh -F /dev/null -p "$PORT" "$USER@$HOST" "ln -sfn '$TARGET_DIR/backend_new' '$TARGET_DIR/current'"
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "chown -R nextjs:nextjs '${{ secrets.TARGET_DIR }}/backend_new'"
 
-      - name: ✅ Install production dependencies
+      - name: ✅ Update symlink to point to new build
         run: |
-          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
-            cd "$TARGET_DIR/current"
-            npm install --omit=dev
-          EOF
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "ln -sfn '${{ secrets.TARGET_DIR }}/backend_new' '${{ secrets.TARGET_DIR }}/current'"
 
-      - name: ✅ Restart PM2 service
+      - name: ✅ Install production dependencies on remote server
         run: |
-          ssh -F /dev/null -p "$PORT" "$USER@$HOST" << 'EOF'
-            cd "$TARGET_DIR/current"
-            pm2 restart app || pm2 start dist/main.js --name app
-            pm2 save
-          EOF
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "cd '${{ secrets.TARGET_DIR }}/current'; npm install --omit=dev"
+
+      - name: ✅ Restart PM2 service on remote server
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "cd '${{ secrets.TARGET_DIR }}/current'; \
+            pm2 restart app || pm2 start dist/main.js --name app; \
+            pm2 save"
+
+      - name: ✅ List directory contents (final check)
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "ls -al '${{ secrets.TARGET_DIR }}/current'"
