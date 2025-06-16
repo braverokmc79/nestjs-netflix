@@ -1,0 +1,103 @@
+name: CI/CD for NestJS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, nextjs-host]
+
+    steps:
+      - name: ✅ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ✅ Set up Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: ✅ List directory contents (initial)
+        run: |
+          pwd
+          ls -alR
+
+      - name: ✅ Create .env file from secrets
+        run: |
+          mkdir -p backend
+          echo "${{ secrets.ENV }}" > backend/.env
+          echo ".env created in backend/"
+
+      - name: ✅ Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: ✅ Build backend project
+        working-directory: ./backend
+        run: npm run build
+
+      - name: ✅ Setup SSH private key and known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.PORT }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: ✅ Test SSH Connection and Confirm Remote Access
+        run: |
+          echo "Testing SSH connection to ${{ secrets.USER }}@${{ secrets.HOST }} on port ${{ secrets.PORT }}..."
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "echo '✅ SSH connection successful: $(hostname)'"
+
+      - name: ✅ Compress backend build directory
+        run: |
+          tar -czf backend.tar.gz backend
+
+      - name: ✅ Transfer compressed build to remote server
+        run: |
+          scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
+
+      - name: ✅ Connect & Extract build (remote)
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "set -e; \
+            cd '${{ secrets.TARGET_DIR }}'; \
+            rm -rf backend_new; \
+            mkdir backend_new; \
+            tar -xzf backend-latest.tar.gz -C backend_new --strip-components=1; \
+            echo '✅ Extraction completed'"
+
+      - name: ✅ Fix permissions on remote server
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "chown -R nextjs:nextjs '${{ secrets.TARGET_DIR }}/backend_new'"
+
+      - name: ✅ Update symlink to point to new build
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "ln -sfn '${{ secrets.TARGET_DIR }}/backend_new' '${{ secrets.TARGET_DIR }}/current'"
+
+      - name: ✅ Install production dependencies on remote server
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "export NVM_DIR=\$HOME/.nvm && \
+              source \$NVM_DIR/nvm.sh && \
+              nvm use 20 && \
+              cd '${{ secrets.TARGET_DIR }}/current' && \
+              npm install --omit=dev"
+            
+
+      - name: ✅ Restart PM2 service on remote server
+        run: |
+              ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+                "export NVM_DIR=\$HOME/.nvm && \
+                  source \$NVM_DIR/nvm.sh && \
+                  nvm use 20 && \
+                  cd '${{ secrets.TARGET_DIR }}/current' && \
+                  pm2 restart app || pm2 start dist/main.js --name app && \
+                  pm2 save"
+            
+
+      - name: ✅ List directory contents (final check)
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "ls -al '${{ secrets.TARGET_DIR }}/current'"
