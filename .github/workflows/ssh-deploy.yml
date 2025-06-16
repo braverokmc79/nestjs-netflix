@@ -79,14 +79,23 @@ jobs:
       - name: ✅ Install production dependencies on remote server
         run: |
           ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
-            "cd '${{ secrets.TARGET_DIR }}/current'; npm install --omit=dev"
+            "export NVM_DIR=\$HOME/.nvm && \
+              source \$NVM_DIR/nvm.sh && \
+              nvm use 20 && \
+              cd '${{ secrets.TARGET_DIR }}/current' && \
+              npm install --omit=dev"
+            
 
       - name: ✅ Restart PM2 service on remote server
         run: |
-          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
-            "cd '${{ secrets.TARGET_DIR }}/current'; \
-            pm2 restart app || pm2 start dist/main.js --name app; \
-            pm2 save"
+              ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+                "export NVM_DIR=\$HOME/.nvm && \
+                  source \$NVM_DIR/nvm.sh && \
+                  nvm use 20 && \
+                  cd '${{ secrets.TARGET_DIR }}/current' && \
+                  pm2 restart app || pm2 start dist/main.js --name app && \
+                  pm2 save"
+            
 
       - name: ✅ List directory contents (final check)
         run: |
