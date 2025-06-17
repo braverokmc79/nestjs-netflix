@@ -1,0 +1,30 @@
+<svg width="220" height="75" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .korean {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 6px;
+    }
+    .english {
+      font-family: 'Noto Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.8px; /* 영어 간격 최적화 */
+    }
+    .divider {
+      stroke: black;
+      stroke-width: 1.5;
+      stroke-dasharray: 4, 4;
+    }
+  </style>
+
+  <!-- 우리광고기획: 가운데 정렬 -->
+  <text x="115" y="35" class="korean" text-anchor="middle">우리광고기획</text>
+
+  <!-- 점선: 정확히 우리광고기획 텍스트 폭에 맞춤 -->
+  <line x1="10" y1="45" x2="215" y2="45" class="divider" />
+
+  <!-- 영어 텍스트: 폭 정렬 유지 -->
+  <text x="115" y="65" class="english" text-anchor="middle">Woori Advertisement</text>
+</svg>
