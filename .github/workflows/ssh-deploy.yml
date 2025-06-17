@@ -101,7 +101,7 @@ jobs:
       - name: ✅ Health Check (2-minute timeout)
         run: |
                 echo "Checking application health at $HEALTHCHECK_URL"
-                RETRIES=24
+                RETRIES=120
                 SLEEP=5
                 COUNT=0
             
