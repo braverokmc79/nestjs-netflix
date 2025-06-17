@@ -10,8 +10,7 @@ import { Movie } from 'src/movies/entity/movie.entity';
 import { TasksService } from './tasks.service';
 import { DefaultLogger } from './logger/default.logger';
 import { BullModule } from '@nestjs/bullmq';
-
-
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -38,11 +37,25 @@ import { BullModule } from '@nestjs/bullmq';
     TypeOrmModule.forFeature([
         Movie,
     ]),
-    BullModule.forRoot({
-       connection: {
-       
+
+    
+    BullModule.forRootAsync({
+    imports: [ConfigModule],
+    useFactory: (configService: ConfigService) => ({
+      connection: {
+        host: configService.get<string>('REDIS_HOST'),
+        port: configService.get<number>('REDIS_PORT'),
+        username: configService.get<string>('REDIS_USERNAME'),
+        password: configService.get<string>('REDIS_PASSWORD'),
       },
-    })
+    }),
+    inject: [ConfigService],
+  }),
+
+    BullModule.registerQueue({
+      name: 'thumbnail-generation',
+    }),
+
   ],
   controllers: [CommonController],  
   providers: [CommonService,TasksService, DefaultLogger],
