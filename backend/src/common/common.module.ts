@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from 'src/movies/entity/movie.entity';
 import { TasksService } from './tasks.service';
 import { DefaultLogger } from './logger/default.logger';
+import { BullModule } from '@nestjs/bullmq';
 
 
 
@@ -37,6 +38,11 @@ import { DefaultLogger } from './logger/default.logger';
     TypeOrmModule.forFeature([
         Movie,
     ]),
+    BullModule.forRoot({
+       connection: {
+       
+      },
+    })
   ],
   controllers: [CommonController],  
   providers: [CommonService,TasksService, DefaultLogger],
