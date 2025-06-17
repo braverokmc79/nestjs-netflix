@@ -37,6 +37,7 @@ import { envVariableKeys } from './common/const/env.const';
 import { ChatModule } from './chat/chat.module';
 import { Chat } from './chat/entity/chat.entity';
 import { ChatRoom } from './chat/entity/chat-room.entity';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -147,6 +148,7 @@ import { ChatRoom } from './chat/entity/chat-room.entity';
     AuthModule,
     UsersModule,
     ChatModule,
+    HealthModule,
   ],
   providers: [
     {
