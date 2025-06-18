@@ -88,13 +88,13 @@ export class BearerTokenMiddleware implements NestMiddleware {
         const basicSplit = rawToken.split(' ');
 
         if (basicSplit.length !== 2) {
-            throw new BadRequestException('토큰 포맷이 잘못됐습니다!');
+            throw new BadRequestException('1토큰 포맷이 잘못됐습니다!');
         }
 
         const [bearer, token] = basicSplit;
 
         if (bearer.toLowerCase() !== 'bearer') {
-            throw new BadRequestException('토큰 포맷이 잘못됐습니다!');        
+            throw new BadRequestException('2토큰 포맷이 잘못됐습니다!');        
         }
         return token;
     }
