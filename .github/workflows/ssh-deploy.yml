@@ -32,13 +32,16 @@ jobs:
           echo "${{ secrets.ENV }}" > backend/.env
           echo ".env created in backend/"
 
+      - name: ✅ Install pnpm
+        run: npm install -g pnpm
+            
       - name: ✅ Install backend dependencies
         working-directory: ./backend
-        run: npm install
+        run: pnpm install
 
       - name: ✅ Build backend project
         working-directory: ./backend
-        run: npm run build
+        run: pnpm run build
 
       - name: ✅ Setup SSH private key and known_hosts
         run: |
@@ -87,7 +90,7 @@ jobs:
               source \$NVM_DIR/nvm.sh && \
               nvm use 20 && \
               cd '${{ secrets.TARGET_DIR }}/backend_current' && \
-              npm install --omit=dev"
+              pnpm  install --prod"
 
       - name: ✅ Zero Downtime Reload using PM2
         run: |
