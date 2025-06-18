@@ -198,6 +198,7 @@ export class AppModule implements NestModule {
           method: RequestMethod.POST,
           version: '1',
         },
+        { path: 'health', method: RequestMethod.GET }, // ✅ 헬스 체크 라우트 추가
       )
       .forRoutes('*');
   }
