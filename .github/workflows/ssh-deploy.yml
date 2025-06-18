@@ -10,7 +10,7 @@ jobs:
 
     env: 
       # GitHub Actions Runner가 직접 서버에 설치된 self-hosted runner인 경우 로컬로 설정
-      HEALTHCHECK_URL: "http://localhost:3000/health"
+      HEALTHCHECK_URL: "${{ secrets.HEALTHCHECK_URL }}"
 
     steps:
       - name: ✅ Checkout repository
