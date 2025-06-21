@@ -14,6 +14,7 @@ import {
   UploadedFiles,
   BadRequestException,
   VERSION_NEUTRAL,
+  Req,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -22,16 +23,13 @@ import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/users/entity/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
-import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';
 import { UserId } from 'src/users/decorator/user-id.decorator';
 import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
-import { Throttle } from 'src/common/decorator/throttle.decorator';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-
-
+import { endWith } from 'rxjs';
 
 
 @Controller({
@@ -50,13 +48,11 @@ export class MoviesController {
   // @Throttle({
   //   count:5,
   //   unit:"minute"
-    // })
+  // })
   @ApiResponse({
-    type: GetMoviesDto, 
+    type: GetMoviesDto,
     status: 200,
     description: '성공적으로 API 실행 했을 때',
-
-
   })
   getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     console.log('userId ', userId);
@@ -78,8 +74,22 @@ export class MoviesController {
 
   @Get(':id')
   @Public()
-  getMovie(@Param('id', ParseIntPipe) id: number) {
-    return this.moviesService.findOne(+id);
+  getMovie(@Param('id', ParseIntPipe) id: number, @Req() request: Express.Request) {
+    const session = request.session;
+
+    // movieCount 초기화 (session.movieCount가 없을 경우 대비)
+    session.movieCount = session.movieCount ?? {};
+
+    // 현재 영화 id 조회수 가져오기
+    const currentCount = session.movieCount[id] ?? 0;
+
+    // 조회수 증가
+    session.movieCount[id] = currentCount + 1;
+
+    console.log('영화 ID:', id, '| 조회수:', session.movieCount[id]);
+    console.log('auth 정보:', session.auth);
+
+    return this.moviesService.findOne(id);
   }
 
   @Post()
@@ -101,8 +111,8 @@ export class MoviesController {
     @Body() body: CreateMovieDto,
     @Request() req,
     @UploadedFiles() // new MovieFilePipe({
-    file //   maxSize: 10,
     //   mimetype: 'video/mp4',
+    file //   maxSize: 10,
     // }),
     : {
       movie?: Express.Multer.File[];

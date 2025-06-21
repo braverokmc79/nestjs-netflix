@@ -39,7 +39,7 @@ export class CommonController {
         videoId: movie.filename,
         videoPath: movie.path,
     }, {
-        priority: 1,
+        priority: 2,
         delay: 100,
         attempts: 3,
         lifo: true,

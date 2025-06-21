@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, Get,  Post, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get,  Post, Req, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entity/user.entity';
 import type{ Request as ExpressRequest } from 'express';
@@ -7,6 +7,7 @@ import { JwtAuthGuard} from './strategy/jwt.strategy';
 import { Public } from './decorator/public.decorator';
 import { ApiBasicAuth, ApiBearerAuth } from '@nestjs/swagger';
 import { Authorization } from './decorator/authorization.decorator';
+
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -25,15 +26,25 @@ export class AuthController {
     return this.authService.registerUser(token, body);
   }
 
-
-
   @Public()
   @Post('login')
   @ApiBasicAuth()
-  loginUser(@Authorization() token: string) {    
-    return this.authService.login(token);
+  loginUser(
+    @Authorization() token: string,
+    @Req() request: Express.Request, // 추가: 세션을 위한 요청 객체
+  ) {
+    const loginResult = this.authService.login(token);
+
+    // 세션에 사용자 정보 저장
+    request.session.auth = {
+      token,
+      loginTime: new Date(),
+    };
+
+    return loginResult;
   }
-  
+
+
 
   @Public()
   @Post('token/block')

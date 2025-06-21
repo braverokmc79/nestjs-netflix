@@ -10,6 +10,8 @@ import * as ffmpeg from '@ffmpeg-installer/ffmpeg';
 import * as ffmpegFluent from 'fluent-ffmpeg';
 import * as ffprobe from 'ffprobe-static';
 
+import * as session from 'express-session';
+
 
 ffmpegFluent.setFfmpegPath(ffmpeg.path);
 ffmpegFluent.setFfprobePath(ffprobe.path);
@@ -68,7 +70,15 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransactionInterceptor(dataSource, reflector));
 
   
+  app.use(
+    session({
+      secret: 'secret',
+    }),
+  );
+
   await app.listen(process.env.PORT ?? 3000);
+
+  console.log(" 실행 포트  : ",  process.env.PORT ?? 3000);
 }
 bootstrap().catch((err) => {
   console.error('Bootstrap error:', err);
