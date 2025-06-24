@@ -60,12 +60,20 @@ import { WorkerModule } from './work/worker.module';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
+        // prisma
+        // url: configService.get<string>(envVariableKeys.dbUrl),
+        // type: configService.get<string>(envVariableKeys.dbType) as 'postgres',
+
+
+        //typeorm
         type: configService.get<string>('DB_TYPE') as 'postgres',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
+
+
         entities: [
           Content,
           Movie,
@@ -73,15 +81,17 @@ import { WorkerModule } from './work/worker.module';
           MovieUserLike,
           Director,
           Genre,
-          User,          
+          User,
           Chat,
-          ChatRoom
+          ChatRoom,
         ],
 
-
         //synchronize는 TypeORM이 애플리케이션 실행 시 DB 스키마를 자동으로 동기화할지를 설정하는 옵션입니다
-        synchronize: configService.get<string>(envVariableKeys.env) ==='prod' ?false : true,
-        // ...(configService.get<string>(envVariableKeys.env) ==='prod' && { 
+        synchronize:
+          configService.get<string>(envVariableKeys.env) === 'prod'
+            ? false
+            : true,
+        // ...(configService.get<string>(envVariableKeys.env) ==='prod' && {
         //   ssl: {
         //     // SSL 연결을 사용하되, 서버의 SSL 인증서가 "신뢰할 수 없더라도" 연결을 허용하겠다
         //     //인증서가 자체 서명(self-signed) 이거나 신뢰할 수 없는 기관(CA)에서 발급되었을 경우에도
@@ -90,27 +100,26 @@ import { WorkerModule } from './work/worker.module';
         //   }
         //  }),
 
-
         // ssl:{
         //   rejectUnauthorized: false
         // }
       }),
       inject: [ConfigService],
     }),
-   
+
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public/',
     }),
     CacheModule.register({
-      ttl: 10000,  //10초
-      isGlobal:true
+      ttl: 10000, //10초
+      isGlobal: true,
     }),
     ScheduleModule.forRoot(),
-  
+
     /** 🎈 winston 로그 설정  */
     WinstonModule.forRoot({
-      level: "silly",  // error:0, warn:1, info:2, http:3, verbose:4, debug:5, silly:6
+      level: 'silly', // error:0, warn:1, info:2, http:3, verbose:4, debug:5, silly:6
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
@@ -120,26 +129,29 @@ import { WorkerModule } from './work/worker.module';
             winston.format.printf((info) => {
               dayjs.extend(weekday);
               dayjs.extend(customParseFormat);
-              const formattedTime = dayjs(String(info.timestamp)).format('YYYY-MM-DD HH:mm:ss (ddd)');
+              const formattedTime = dayjs(String(info.timestamp)).format(
+                'YYYY-MM-DD HH:mm:ss (ddd)',
+              );
               return `[${info.level}] [${String(formattedTime)}] [${String(info.context)}] : ${String(info.message)}`;
-            })
+            }),
           ),
         }),
         new winston.transports.File({
-           level: 'error',
-           dirname:join(process.cwd(), 'logs'),
-           filename: 'logs.log',
-           format: winston.format.combine(
-             winston.format.timestamp(),
-             winston.format.printf((info) => {
+          level: 'error',
+          dirname: join(process.cwd(), 'logs'),
+          filename: 'logs.log',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.printf((info) => {
               dayjs.extend(weekday);
               dayjs.extend(customParseFormat);
-              const formattedTime = dayjs(String(info.timestamp)).format('YYYY-MM-DD HH:mm:ss (ddd)');
-               return `[${info.level}] [${String(formattedTime)}] [${String(info.context)}] : ${String(info.message)}`;
-             })
-           )
-
-         })
+              const formattedTime = dayjs(String(info.timestamp)).format(
+                'YYYY-MM-DD HH:mm:ss (ddd)',
+              );
+              return `[${info.level}] [${String(formattedTime)}] [${String(info.context)}] : ${String(info.message)}`;
+            }),
+          ),
+        }),
       ],
     }),
 
@@ -152,8 +164,8 @@ import { WorkerModule } from './work/worker.module';
     HealthModule,
     ConditionalModule.registerWhen(
       WorkerModule,
-      (env:NodeJS.ProcessEnv) => env['TYPE'] ==="worker"
-    )
+      (env: NodeJS.ProcessEnv) => env['TYPE'] === 'worker',
+    ),
   ],
   providers: [
     {
@@ -181,8 +193,7 @@ import { WorkerModule } from './work/worker.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ThrottleInterceptor,
-
-    }
+    },
   ],
 })
 export class AppModule implements NestModule {
