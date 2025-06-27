@@ -1,27 +1,31 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entity/user.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+// import { User } from './entity/user.entity';
+// import { Repository } from 'typeorm';
+// import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../common/prisma.service';
 
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-     private readonly configService: ConfigService,
+    // @InjectRepository(User)
+    // private readonly usersRepository: Repository<User>,
+    private readonly configService: ConfigService,
+    private readonly prisam: PrismaService
   ) {}
 
   async findAll() {
-    return await this.usersRepository.find();
+    //return await this.usersRepository.find();
+    return await this.prisam.user.findMany();
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    //    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.prisam.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
     return user;
@@ -29,18 +33,27 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     
-    const usernameCheck = await this.usersRepository.findOne({
+    // const usernameCheck = await this.usersRepository.findOne({
+    //   where: { username: createUserDto.username },
+    // });
+
+    const usernameCheck = await this.prisam.user.findUnique({
       where: { username: createUserDto.username },
     });
+
+
     if (usernameCheck)
       throw new ConflictException(
         `${createUserDto.username} 은 이미 등록된 유저입니다.`,
       );
 
-    const emailCheck = await this.usersRepository.findOne({
+    // const emailCheck = await this.usersRepository.findOne({
+    //   where: { email: createUserDto.email },
+    // });
+
+    const emailCheck = await this.prisam.user.findUnique({
       where: { email: createUserDto.email },
     });
-
    
     if (emailCheck)throw new ConflictException(
         `${createUserDto.email} 은 이미 등록된 이메일 입니다.`,
@@ -49,20 +62,37 @@ export class UsersService {
 
     const hashRounds = this.configService.get<number>('HASH_ROUNDS') || 10;
     const hashedPassword = await bcrypt.hash(createUserDto.password, hashRounds);
-    await this.usersRepository.save({
-      username: createUserDto?.username ? createUserDto.username : createUserDto.email,
-      name: createUserDto?.name ? createUserDto.name : createUserDto.email,
-      email: createUserDto.email,
-      password: hashedPassword,
-    });
+    // await this.usersRepository.save({
+    //   username: createUserDto?.username ? createUserDto.username : createUserDto.email,
+    //   name: createUserDto?.name ? createUserDto.name : createUserDto.email,
+    //   email: createUserDto.email,
+    //   password: hashedPassword,
+    // });
   
-    return this.usersRepository.findOne({ where: { email:createUserDto.email } });    
+    await this.prisam.user.create({
+      data: {
+        username: createUserDto?.username ? createUserDto.username : createUserDto.email,
+        name: createUserDto?.name ? createUserDto.name : createUserDto.email,
+        email: createUserDto.email,
+        password: hashedPassword,
+      },
+    });
+    //return this.usersRepository.findOne({ where: { email:createUserDto.email } });    
+
+    return this.prisam.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+
   }
 
 
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    // const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.prisam.user.findUnique({
+      where: { id },
+    });
+
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
     let hashedPassword:string = "";
@@ -71,22 +101,38 @@ export class UsersService {
        hashedPassword = await bcrypt.hash(updateUserDto.password, hashRounds);  
     }
     
-    await this.usersRepository.update({ id }, {
-       ...updateUserDto,
-       ...(updateUserDto.password && { password: hashedPassword }),
+    // await this.usersRepository.update({ id }, {
+    //    ...updateUserDto,
+    //    ...(updateUserDto.password && { password: hashedPassword }),
+    // });
+
+    await this.prisam.user.update({
+      where: { id },
+      data: {
+        ...updateUserDto,
+        ...(updateUserDto.password && { password: hashedPassword }),
+      },
     });
 
-    const updateUser = await this.usersRepository.findOne({ where: { id } });
-    return updateUser;
+    // const updateUser = await this.usersRepository.findOne({ where: { id } });
+    // return updateUser;
+
+    return this.prisam.user.findUnique({
+      where: { id },
+    });
   }
 
 
   async remove(id: number) {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    //const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.prisam.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
-    await this.usersRepository.delete(id);
-    return id;
+    // await this.usersRepository.delete(id);
+    // return id;
+
+    return await this.prisam.user.delete({ where: { id } });
+    
   }
 
 

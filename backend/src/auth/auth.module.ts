@@ -7,6 +7,7 @@ import { JwtModule  } from '@nestjs/jwt';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
+import { CommonModule } from 'src/common/common.module';
 
 
 
@@ -14,7 +15,8 @@ import { UsersModule } from 'src/users/users.module';
   imports: [
     TypeOrmModule.forFeature([User]), 
     JwtModule.register({}) ,
-    UsersModule   
+    UsersModule,
+    CommonModule
   ],
 
   controllers: [AuthController],

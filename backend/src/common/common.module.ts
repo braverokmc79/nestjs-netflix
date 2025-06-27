@@ -12,55 +12,51 @@ import { DefaultLogger } from './logger/default.logger';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { PrismaService } from './prisma.service';
+
 @Module({
   imports: [
     MulterModule.register({
       storage: diskStorage({
-          /// ......./Netflix/public/movie
-          /// process.cwd() + '/public' + '/movie'
-          /// process.cwd() + '\public' + '\movie'
-          destination: join(process.cwd(), 'public', 'temp'),
-          filename: (req, file, cb) => {
-              const split = file.originalname.split('.');
+        /// ......./Netflix/public/movie
+        /// process.cwd() + '/public' + '/movie'
+        /// process.cwd() + '\public' + '\movie'
+        destination: join(process.cwd(), 'public', 'temp'),
+        filename: (req, file, cb) => {
+          const split = file.originalname.split('.');
 
-              let extension = 'mp4';
+          let extension = 'mp4';
 
-              if (split.length > 1) {
-                  extension = split[split.length - 1];
-              }
-              
-              cb(null, `${uuidv4() ?? ''}_${Date.now()}.${extension}`);
+          if (split.length > 1) {
+            extension = split[split.length - 1];
           }
+
+          cb(null, `${uuidv4() ?? ''}_${Date.now()}.${extension}`);
+        },
       }),
-  }),
-
-    TypeOrmModule.forFeature([
-        Movie,
-    ]),
-
-    
-    BullModule.forRootAsync({
-    imports: [ConfigModule],
-    useFactory: (configService: ConfigService) => ({
-      connection: {
-        host: configService.get<string>('REDIS_HOST'),
-        port: configService.get<number>('REDIS_PORT'),
-        username: configService.get<string>('REDIS_USERNAME'),
-        password: configService.get<string>('REDIS_PASSWORD'),
-      },
     }),
-    inject: [ConfigService],
-  }),
+
+    TypeOrmModule.forFeature([Movie]),
+
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+          username: configService.get<string>('REDIS_USERNAME'),
+          password: configService.get<string>('REDIS_PASSWORD'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
 
     BullModule.registerQueue({
       name: 'thumbnail-generation',
     }),
-
   ],
-  controllers: [CommonController],  
-  providers: [CommonService,TasksService, DefaultLogger],
-  exports: [CommonService],
+  controllers: [CommonController],
+  providers: [CommonService, TasksService, DefaultLogger, PrismaService],
+  exports: [CommonService, PrismaService],
 })
-export class CommonModule {
- 
-}
+export class CommonModule {}

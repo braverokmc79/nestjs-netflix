@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import {  User } from 'src/users/entity/user.entity';
-import { Repository } from 'typeorm';
+// import { InjectRepository } from '@nestjs/typeorm';
+// import {  User } from 'src/users/entity/user.entity';
+// import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -10,19 +10,22 @@ import { envVariableKeys } from 'src/common/const/env.const';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { PrismaService } from 'src/common/prisma.service';
 
 
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    // @InjectRepository(User)
+    // private readonly usersRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly userService:UsersService,
     @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache
+    private readonly cacheManager: Cache,
+    private readonly prisma: PrismaService
+    
   ) {}
 
 
@@ -121,7 +124,8 @@ export class AuthService {
   async registerUser(rowToken: string, body?:{username: string, name: string}) {
     const { email, password } = this.parseBasicToken(rowToken);
     
-    const user = await this.usersRepository.findOne({ where: { email } });
+    //'const user = await this.usersRepository.findOne({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
     }
@@ -145,7 +149,8 @@ export class AuthService {
   
 
   async authenticate(email: string, password: string) {
-    const user = await this.usersRepository.findOne({ where: { email } });
+    //const user = await this.usersRepository.findOne({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new BadRequestException('잘못된 로그인 정보입니다.1');
     }
