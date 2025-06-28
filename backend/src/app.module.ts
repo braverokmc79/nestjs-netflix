@@ -39,6 +39,9 @@ import { Chat } from './chat/entity/chat.entity';
 import { ChatRoom } from './chat/entity/chat-room.entity';
 import { HealthModule } from './health/health.module';
 import { WorkerModule } from './work/worker.module';
+import { TransformableInfo } from 'logform';
+
+
 
 @Module({
   imports: [
@@ -143,6 +146,7 @@ import { WorkerModule } from './work/worker.module';
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf((info) => {
+              
               dayjs.extend(weekday);
               dayjs.extend(customParseFormat);
               const formattedTime = dayjs(String(info.timestamp)).format(

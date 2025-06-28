@@ -12,7 +12,9 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
 
   catch(exception: ForbiddenException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    
+     console.log("============================ ForbiddenExceptionFilter ");
+
+
     const response: Response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 

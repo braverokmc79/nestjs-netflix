@@ -98,6 +98,9 @@ importers:
       joi:
         specifier: ^17.13.3
         version: 17.13.3
+      logform:
+        specifier: ^2.7.0
+        version: 2.7.0
       multer:
         specifier: ^2.0.1
         version: 2.0.1

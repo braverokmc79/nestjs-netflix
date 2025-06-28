@@ -10,6 +10,7 @@ export class RbacGuard implements CanActivate {
     constructor( private readonly reflector: Reflector) {}
 
     canActivate(context: ExecutionContext): boolean {  
+        console.log("***** RbacGuard ");
         const role =this.reflector.get<Role>(RBAC, context.getHandler());
       
         /// Role Enum 에 해당되는 값이 데코레이터에 들어갔는지 확인하기!

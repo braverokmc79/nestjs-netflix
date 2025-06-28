@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
+import { Prisma } from '@prisma/client';
 
 
 @Injectable()
@@ -20,12 +21,14 @@ export class UsersService {
 
   async findAll() {
     //return await this.usersRepository.find();
-    return await this.prisma.user.findMany();
+    return await this.prisma.user.findMany({
+      omit: { password: true },
+    });
   }
 
   async findOne(id: number) {
     //    const user = await this.usersRepository.findOne({ where: { id } });
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id },omit: { password: true } });
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
     return user;
@@ -101,6 +104,13 @@ export class UsersService {
        hashedPassword = await bcrypt.hash(updateUserDto.password, hashRounds);  
     }
     
+    const input :Prisma.UserUpdateInput={
+      ...updateUserDto,
+      ...(updateUserDto.password && { password: hashedPassword }),
+     };
+    
+
+
     // await this.usersRepository.update({ id }, {
     //    ...updateUserDto,
     //    ...(updateUserDto.password && { password: hashedPassword }),
@@ -108,10 +118,12 @@ export class UsersService {
 
     await this.prisma.user.update({
       where: { id },
-      data: {
-        ...updateUserDto,
-        ...(updateUserDto.password && { password: hashedPassword }),
-      },
+      data: input
+
+      // data: {
+      //   ...updateUserDto,
+      //   ...(updateUserDto.password && { password: hashedPassword }),
+      // },
     });
 
     // const updateUser = await this.usersRepository.findOne({ where: { id } });
@@ -119,6 +131,7 @@ export class UsersService {
 
     return this.prisma.user.findUnique({
       where: { id },
+      omit: { password: true },
     });
   }
 
