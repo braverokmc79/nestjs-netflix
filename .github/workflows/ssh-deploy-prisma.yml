@@ -1,0 +1,192 @@
+name: CI/CD for NestJS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, nextjs-host]
+
+    env: 
+      # GitHub Actions Runner가 직접 서버에 설치된 self-hosted runner인 경우 로컬로 설정
+      HEALTHCHECK_URL: "${{ secrets.HEALTHCHECK_URL }}"
+
+    steps:
+      - name: ✅ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ✅ Set up Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: ✅ List directory contents (initial)
+        run: |
+          pwd
+          ls -alR
+
+      - name: ✅ Create .env file from secrets
+        run: |
+          mkdir -p backend
+          echo "${{ secrets.ENV }}" > backend/.env
+          echo ".env created in backend/"
+
+      - name: ✅ Install pnpm
+        run: npm install -g pnpm
+            
+      - name: ✅ Install backend dependencies
+        working-directory: ./backend
+        run: pnpm install
+
+      - name: ✅ Generate Prisma Client
+        working-directory: ./backend
+        run: pnpm prisma generate
+
+
+      - name: ✅ Build backend project
+        working-directory: ./backend
+        run: pnpm run build
+
+      - name: ✅ Setup SSH private key and known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.PORT }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: ✅ Test SSH Connection and Confirm Remote Access
+        run: |
+          echo "Testing SSH connection to ${{ secrets.USER }}@${{ secrets.HOST }} on port ${{ secrets.PORT }}..."
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "echo '✅ SSH connection successful: $(hostname)'"
+
+      - name: ✅ Backup current version for rollback
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "cd '${{ secrets.TARGET_DIR }}'; \
+            if [ -d backend_current ]; then rm -rf backend_backup && mv backend_current backend_backup; fi"
+
+      - name: ✅ Compress backend build directory
+        run: |
+          tar -czf backend.tar.gz backend
+
+      - name: ✅ Transfer compressed build to remote server
+        run: |
+          scp -P ${{ secrets.PORT }} backend.tar.gz ${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/backend-latest.tar.gz
+
+      - name: ✅ Connect & Extract build (remote)
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "set -e; \
+            cd '${{ secrets.TARGET_DIR }}'; \
+            mkdir backend_current; \
+            tar -xzf backend-latest.tar.gz -C backend_current --strip-components=1; \
+            echo '✅ Extraction completed'"
+
+      - name: ✅ Fix permissions on remote server
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "chown -R nextjs:nextjs '${{ secrets.TARGET_DIR }}/backend_current'"
+
+      - name: ✅ Install production dependencies on remote server
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "export NVM_DIR=\$HOME/.nvm && \
+              source \$NVM_DIR/nvm.sh && \
+              nvm use 20 && \
+              cd '${{ secrets.TARGET_DIR }}/backend_current' && \
+              pnpm  install --prod"
+
+      - name: ✅ Zero Downtime Reload using PM2
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "export NVM_DIR=\$HOME/.nvm && \
+              source \$NVM_DIR/nvm.sh && \
+              nvm use 20 && \
+              cd '${{ secrets.TARGET_DIR }}/backend_current' && \
+              pm2 reload app || pm2 start dist/main.js --name app && \
+              pm2 save"
+
+      - name: ✅ Health Check (2-min timeout, 5s intervals)
+        run: |
+          echo "Checking health at $HEALTHCHECK_URL"
+          for i in {1..72}; do
+            http_code=$(curl --max-time 2 -s -o /dev/null -w "%{http_code}" "$HEALTHCHECK_URL")
+            if [ "$http_code" = "200" ]; then
+              echo "✅ Healthy!"
+              exit 0
+            fi
+            echo "❌ $i/72 - HTTP $http_code, retrying..."
+            sleep 5
+          done
+          echo "🔥 Health check failed after 2 minutes."
+          exit 1
+            
+
+      - name: ✅ Rollback if health check failed
+        if: failure()
+        run: |
+          echo "Rolling back to previous stable version..."
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} \
+            "cd '${{ secrets.TARGET_DIR }}'; \
+            rm -rf backend_current; \
+            mv backend_backup backend_current; \
+            export NVM_DIR=\$HOME/.nvm && source \$NVM_DIR/nvm.sh && nvm use 20 && cd backend_current && pm2 reload app && pm2 save"
+
+      - name: ✅ Slack Notification on Success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "text": "✅ NestJS deployment succeeded!",
+              "attachments": [
+                {
+                  "color": "#36a64f",
+                  "fields": [
+                    {"title": "Branch", "value": "${{ github.ref }}", "short": true},
+                    {"title": "Commit", "value": "${{ github.sha }}", "short": true},
+                    {"title": "Actor", "value": "${{ github.actor }}", "short": true},
+                    {"title": "Repository", "value": "${{ github.repository }}", "short": true}
+                  ]
+                }
+              ]
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: ✅ Slack Notification on Failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "text": "❌ NestJS deployment failed and rollback executed!",
+              "attachments": [
+                {
+                  "color": "#ff0000",
+                  "fields": [
+                    {"title": "Branch", "value": "${{ github.ref }}", "short": true},
+                    {"title": "Commit", "value": "${{ github.sha }}", "short": true},
+                    {"title": "Actor", "value": "${{ github.actor }}", "short": true},
+                    {"title": "Repository", "value": "${{ github.repository }}", "short": true}
+                  ]
+                }
+              ]
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: ✅ Slack Deployment Diff Info
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "text": "🔍 Deployment Info:",
+              "attachments": [
+                {
+                  "color": "#439FE0",
+                  "fields": [
+                    {"title": "Commit Message", "value": "${{ github.event.head_commit.message }}"},
+                    {"title": "Commit Author", "value": "${{ github.event.head_commit.author.name }}"},
+                    {"title": "Commit Timestamp", "value": "${{ github.event.head_commit.timestamp }}"}
+                  ]
+                }
+              ]
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
