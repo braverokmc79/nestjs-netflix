@@ -22,6 +22,7 @@ import { User } from 'src/users/entity/user.entity';
       Genre,
       User,
       MovieUserLike,
+      CommonModule,
     ]),
     CommonModule,
   ],
