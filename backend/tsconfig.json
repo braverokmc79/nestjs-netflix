@@ -1,20 +1,27 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "strict": true,  // TypeScript의 모든 엄격한 검사 활성화 (기본)
+    "strictPropertyInitialization": false,  // 클래스에서 프로퍼티 초기화 검사 끔 (생성자에서 초기화 안 해도 오류 없음)
+    "noImplicitAny": false,  // 타입을 명시하지 않아도 'any'로 처리 (암시적 any 허용)
+    "skipLibCheck": true,    // 외부 라이브러리의 타입 검사 생략 (속도 ↑, 오류 ↓)
+    "esModuleInterop": true,             // ES6 방식 import 가능하게 함 (예: import fs from 'fs')
+    "resolveJsonModule": true,           // JSON 파일 import 허용 (예: import config from './config.json')
+    "target": "ES2021",     // 컴파일 결과 JavaScript 버전 (ES2021)
+    "module": "CommonJS"   ,              // 모듈 시스템 설정 (Node.js에서 주로 사용)
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "skipLibCheck": true,
+    
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
+
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "typeRoots": ["./node_modules/@types", "./src/types"]

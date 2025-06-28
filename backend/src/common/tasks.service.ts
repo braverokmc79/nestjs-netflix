@@ -75,7 +75,8 @@ export class TasksService {
 
                 return (now - date) > aDayInMilSec;
 
-            } catch (e) {
+            } catch (error) {
+                console.log(error);
                 return true;
             }
         });

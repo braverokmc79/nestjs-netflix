@@ -15,17 +15,17 @@ export class UsersService {
     // @InjectRepository(User)
     // private readonly usersRepository: Repository<User>,
     private readonly configService: ConfigService,
-    private readonly prisam: PrismaService
+    private readonly prisma: PrismaService
   ) {}
 
   async findAll() {
     //return await this.usersRepository.find();
-    return await this.prisam.user.findMany();
+    return await this.prisma.user.findMany();
   }
 
   async findOne(id: number) {
     //    const user = await this.usersRepository.findOne({ where: { id } });
-    const user = await this.prisam.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
     return user;
@@ -37,7 +37,7 @@ export class UsersService {
     //   where: { username: createUserDto.username },
     // });
 
-    const usernameCheck = await this.prisam.user.findUnique({
+    const usernameCheck = await this.prisma.user.findUnique({
       where: { username: createUserDto.username },
     });
 
@@ -51,7 +51,7 @@ export class UsersService {
     //   where: { email: createUserDto.email },
     // });
 
-    const emailCheck = await this.prisam.user.findUnique({
+    const emailCheck = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
    
@@ -69,7 +69,7 @@ export class UsersService {
     //   password: hashedPassword,
     // });
   
-    await this.prisam.user.create({
+    await this.prisma.user.create({
       data: {
         username: createUserDto?.username ? createUserDto.username : createUserDto.email,
         name: createUserDto?.name ? createUserDto.name : createUserDto.email,
@@ -79,7 +79,7 @@ export class UsersService {
     });
     //return this.usersRepository.findOne({ where: { email:createUserDto.email } });    
 
-    return this.prisam.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
 
@@ -89,7 +89,7 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     // const user = await this.usersRepository.findOne({ where: { id } });
-    const user = await this.prisam.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
@@ -106,7 +106,7 @@ export class UsersService {
     //    ...(updateUserDto.password && { password: hashedPassword }),
     // });
 
-    await this.prisam.user.update({
+    await this.prisma.user.update({
       where: { id },
       data: {
         ...updateUserDto,
@@ -117,7 +117,7 @@ export class UsersService {
     // const updateUser = await this.usersRepository.findOne({ where: { id } });
     // return updateUser;
 
-    return this.prisam.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { id },
     });
   }
@@ -125,13 +125,13 @@ export class UsersService {
 
   async remove(id: number) {
     //const user = await this.usersRepository.findOne({ where: { id } });
-    const user = await this.prisam.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
     // await this.usersRepository.delete(id);
     // return id;
 
-    return await this.prisam.user.delete({ where: { id } });
+    return await this.prisma.user.delete({ where: { id } });
     
   }
 
