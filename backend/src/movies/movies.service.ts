@@ -12,9 +12,10 @@ import { CommonService } from 'src/common/common.service';
 import {join} from 'path';
 import * as path from 'path';
 import {rename} from 'fs/promises';
-import { MovieUserLike } from './entity/movie-user-like.entity';
-import { User } from 'src/users/entity/user.entity';
+// import { MovieUserLike } from './entity/movie-user-like.entity';
+// import { User } from 'src/users/entity/user.entity';
 import { CACHE_MANAGER , Cache} from '@nestjs/cache-manager';
+import { PrismaService } from 'src/common/prisma.service';
 
 
 @Injectable()
@@ -22,23 +23,25 @@ export class MoviesService {
   //private readonly queryRunner: QueryRunner;
 
   constructor(
-    @InjectRepository(Movie)
-    private readonly movieRepository: Repository<Movie>,
+    // @InjectRepository(Movie)
+    // private readonly movieRepository: Repository<Movie>,
 
-    @InjectRepository(MovieDetail)
-    private readonly movieDetailRepository: Repository<MovieDetail>,
+    // @InjectRepository(MovieDetail)
+    // private readonly movieDetailRepository: Repository<MovieDetail>,
 
-    @InjectRepository(Director)
-    private readonly directorRepository: Repository<Director>,
+    // @InjectRepository(Director)
+    // private readonly directorRepository: Repository<Director>,
 
-    @InjectRepository(Genre)
-    private readonly genreRepository: Repository<Genre>,
+    // @InjectRepository(Genre)
+    // private readonly genreRepository: Repository<Genre>,
 
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // @InjectRepository(User)
+    // private readonly userRepository: Repository<User>,
 
-    @InjectRepository(MovieUserLike)
-    private readonly movieUserLikeRepository: Repository<MovieUserLike>,
+    // @InjectRepository(MovieUserLike)
+    // private readonly movieUserLikeRepository: Repository<MovieUserLike>,
+
+    private readonly prisma: PrismaService,
 
     private readonly dataSource: DataSource,
 
@@ -55,21 +58,47 @@ export class MoviesService {
 
    /* istanbul ignore next */
    getMovies(){
-    return  this.movieRepository
-      .createQueryBuilder('moive')
-      .leftJoinAndSelect('moive.director', 'director')
-      .leftJoinAndSelect('moive.genres', 'genres')
-      .loadRelationCountAndMap('moive.likeCount', 'moive.likeUsers');
+    // return  this.movieRepository
+    //   .createQueryBuilder('moive')
+    //   .leftJoinAndSelect('moive.director', 'director')
+    //   .leftJoinAndSelect('moive.genres', 'genres')
+     //   .loadRelationCountAndMap('moive.likeCount', 'moive.likeUsers');
+     
+      return this.prisma.movie.findMany({
+        include: {
+          director: true,
+          genres: true,
+          _count: {
+            select: {
+              likedUsers: true,
+            },
+          },
+        },
+      });
   }
 
   /* istanbul ignore next */
  async getLikedMovies(movieIds: number[], userId: number){
-    return   await this.movieUserLikeRepository.createQueryBuilder('mul')
-    .leftJoinAndSelect('mul.movie', 'movie')
-    .leftJoinAndSelect('mul.user', 'user')
-    .where('movie.id IN (:...movieIds)', { movieIds })
-    .andWhere('user.id = :userId', { userId })
-    .getMany();      
+    // return   await this.movieUserLikeRepository.createQueryBuilder('mul')
+    // .leftJoinAndSelect('mul.movie', 'movie')
+    // .leftJoinAndSelect('mul.user', 'user')
+    // .where('movie.id IN (:...movieIds)', { movieIds })
+    // .andWhere('user.id = :userId', { userId })
+   // .getMany();      
+
+    return await this.prisma.movieUserLike.findMany({
+      where: {
+        movie: {
+          id: {
+            in: movieIds,
+          },
+        },
+        user: {
+          id: userId,
+        },
+      },
+    })
+   
   }
 
   async findAll(dto: GetMoviesDto, userId?: number) {
