@@ -21,15 +21,15 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
-import { Role } from 'src/users/entity/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { MovieUploadInterceptor } from 'src/common/interceptor/movie.upload.interceptor';
 import { UserId } from 'src/users/decorator/user-id.decorator';
-import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
-import { QueryRunner as QR } from 'typeorm';
+// import { QueryRunner, } from 'src/common/decorator/query-runner.decorator';
+// import { QueryRunner as QR } from 'typeorm';
 import {  CacheInterceptor as CI } from "@nestjs/cache-manager"
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { endWith } from 'rxjs';
+import { Role } from 'src/common/prisma.service';
+//import { endWith } from 'rxjs';
 
 
 @Controller({
@@ -97,10 +97,10 @@ export class MoviesController {
   //@UseInterceptors(TransactionInterceptor)
   postMovie(
     @Body() body: CreateMovieDto,
-    @QueryRunner() queryRunner: QR,
     @UserId() userId: number,
   ) {
-    return this.moviesService.create(body, userId, queryRunner);
+    // return this.moviesService.create(body, userId, queryRunner);
+    return this.moviesService.create(body, userId);
   }
 
   @Post('upload')

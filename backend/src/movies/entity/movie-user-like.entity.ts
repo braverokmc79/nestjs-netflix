@@ -12,7 +12,7 @@ export class MovieUserLike {
     })
     @ManyToOne(
         ()=>Movie,
-        (movie)=>movie.likeUsers, 
+        (movie)=>movie.likedUsers, 
         {
             onDelete: 'CASCADE',
         }       

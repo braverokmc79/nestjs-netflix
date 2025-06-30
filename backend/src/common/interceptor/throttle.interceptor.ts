@@ -4,7 +4,6 @@ import { Reflector } from "@nestjs/core";
 import type{ Request } from "express";
 import { Observable, tap } from "rxjs";
 import { Throttle } from "../decorator/throttle.decorator";
-import { User } from "src/users/entity/user.entity";
 import { UserPayload } from "src/auth/types/user-payload.interface";
 
 

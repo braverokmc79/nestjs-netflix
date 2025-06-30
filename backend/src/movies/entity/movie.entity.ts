@@ -17,20 +17,14 @@ import { ApiProperty } from "@nestjs/swagger";
 
 @Entity()
 export class Movie extends BaseTable {
-
   @PrimaryGeneratedColumn()
   id: number;
 
-
-  @ManyToOne(
-      () => User,
-      (user) => user.createdMovies,     
-  )
-  creator:User;
-
+  @ManyToOne(() => User, (user) => user.createdMovies)
+  creator: User;
 
   @Column({
-    unique: true
+    unique: true,
   })
   @ApiProperty({
     description: '영화의 제목',
@@ -46,9 +40,8 @@ export class Movie extends BaseTable {
   @JoinTable()
   genres: Genre[];
 
-
   @Column({
-    default: 0
+    default: 0,
   })
   @ApiProperty({
     description: '좋아요 개수',
@@ -56,16 +49,14 @@ export class Movie extends BaseTable {
   })
   likeCount: number;
 
-
   @Column({
-    default: 0
+    default: 0,
   })
   @ApiProperty({
     description: '싫어요 개수',
     example: '0',
   })
   dislikeCount: number;
-
 
   @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.id, {
     cascade: true,
@@ -75,27 +66,25 @@ export class Movie extends BaseTable {
   @ApiProperty({
     description: '영화의 상세정보',
     example: '영화 상세정보',
-  })  
+  })
   detail: MovieDetail;
 
-  
   @Column()
   @Transform(({ value }) => `http://localhost:3000/${value}`)
   @ApiProperty({
     description: '영화 파일 경로',
     example: 'http://localhost:3000/abc.mp4',
-  })  
-  movieFilePath:string;
+  })
+  movieFilePath: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
   @ApiProperty({
     description: '영화 포스터 파일 경로',
     example: 'http://localhost:3000/abc.jpg',
   })
-  posterFilePath:string;
-  
+  posterFilePath: string;
 
   @ManyToOne(() => Director, (director) => director.id, {
     cascade: true,
@@ -105,17 +94,9 @@ export class Movie extends BaseTable {
   @ApiProperty({
     description: '감독',
     example: '홍길동',
-  })  
+  })
   director: Director;
 
-  
-  @OneToMany(
-    () => MovieUserLike,
-    (mul) => mul.movie
-  )
-  likeUsers:MovieUserLike[]
-
-
-  
-
+  @OneToMany(() => MovieUserLike, (mul) => mul.movie)
+  likedUsers: MovieUserLike[];
 }
