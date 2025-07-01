@@ -13,21 +13,23 @@ const awsSecretAccessKey = 'AWS_SECRET_ACCESS_KEY';
 const awsAccessKeyId = 'AWS_ACCESS_KEY_ID';
 const awsRegion = 'AWS_REGION';
 const bucketName = 'BUCKET_NAME'
+const mongodbUrl = 'MONGODB_URL';
 
 export const envVariableKeys = {
-    env,
-    dbType,
-    dbHost,
-    dbPort,
-    dbUsername,
-    dbPassword,
-    dbDatabase,
-    dbUrl,
-    hashRounds,
-    accessTokenSecret,
-    refreshTokenSecret,
-    awsSecretAccessKey,
-    awsAccessKeyId,
-    awsRegion,
-    bucketName
-}
+  env,
+  dbType,
+  dbHost,
+  dbPort,
+  dbUsername,
+  dbPassword,
+  dbDatabase,
+  dbUrl,
+  hashRounds,
+  accessTokenSecret,
+  refreshTokenSecret,
+  awsSecretAccessKey,
+  awsAccessKeyId,
+  awsRegion,
+  bucketName,
+  mongodbUrl,
+};

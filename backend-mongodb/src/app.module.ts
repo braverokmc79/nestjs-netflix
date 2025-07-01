@@ -39,6 +39,7 @@ import { Chat } from './chat/entity/chat.entity';
 import { ChatRoom } from './chat/entity/chat-room.entity';
 import { HealthModule } from './health/health.module';
 import { WorkerModule } from './work/worker.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 
 
@@ -61,12 +62,20 @@ import { WorkerModule } from './work/worker.module';
         REFRESH_TOKEN_SECRET: Joi.string().required(),
       }),
     }),
+
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule], // ConfigService 주입 위해 필요
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URL'), // ✅ 주의: database ❌ → uri ✅
+      }),
+      inject: [ConfigService],
+    }),
+
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         // prisma
         // url: configService.get<string>(envVariableKeys.dbUrl),
         // type: configService.get<string>(envVariableKeys.dbType) as 'postgres',
-
 
         //typeorm
         type: configService.get<string>('DB_TYPE') as 'postgres',
@@ -75,7 +84,6 @@ import { WorkerModule } from './work/worker.module';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-
 
         entities: [
           Content,
@@ -146,7 +154,6 @@ import { WorkerModule } from './work/worker.module';
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf((info) => {
-              
               dayjs.extend(weekday);
               dayjs.extend(customParseFormat);
               const formattedTime = dayjs(String(info.timestamp)).format(
