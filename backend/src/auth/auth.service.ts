@@ -10,7 +10,7 @@ import { envVariableKeys } from 'src/common/const/env.const';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { PrismaService } from 'src/common/prisma.service';
+import { PrismaService, User } from 'src/common/prisma.service';
 
 
 
@@ -123,12 +123,15 @@ export class AuthService {
 
   async registerUser(rowToken: string, body?:{username: string, name: string}) {
     const { email, password } = this.parseBasicToken(rowToken);
-    
+    if (!email || !password) {
+      throw new BadRequestException('이메일와 비밀번호를 입력해 주세요.');
+    }
     //'const user = await this.usersRepository.findOne({ where: { email } });
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user) {
+    if (user&& user?.email) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
     }
+
     
     const username= body?.username || "";
     const name= body?.name || "";

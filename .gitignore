@@ -3,6 +3,11 @@
 /node_modules
 /build
 
+/backend-mongodb/node_modules
+
+
+
+
 # Logs
 logs
 *.log
@@ -58,4 +63,17 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+
+
 combined.log
+
+
+# compiled output
+
+
+/backend-mongodb/node_modules/*
+/backend-mongodb/.env
+
+*/dist
+*/node_modules
+*/build

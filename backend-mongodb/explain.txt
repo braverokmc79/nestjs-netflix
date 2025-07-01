@@ -1,0 +1,2 @@
+$ pnpm install class-validator
+$ pnpm install class-transformer
