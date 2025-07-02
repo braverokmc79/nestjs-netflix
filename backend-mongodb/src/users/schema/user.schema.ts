@@ -1,6 +1,10 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Role } from '../entity/user.entity';
+import { Movie } from 'src/movies/schema/movie.schema';
+import { Chat } from 'src/chat/schema/chat.schema';
+import { ChatRoom } from 'src/chat/schema/chat-room.schema';
+import { MovieUserLike } from 'src/movies/schema/movie-user-like.schema';
 
 // export enum Role {
 //   admin, //관리자
