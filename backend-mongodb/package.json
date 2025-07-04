@@ -32,6 +32,7 @@
     "test:movies:watch": "jest --watch --testPathPattern=src/movies --coverage --collectCoverageFrom='src/movies/**/*.{ts,tsx}'  "
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.842.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@nestjs/bullmq": "^11.0.2",
     "@nestjs/cache-manager": "^3.0.1",

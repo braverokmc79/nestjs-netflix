@@ -3,6 +3,19 @@ import { SelectQueryBuilder } from "typeorm";
 import { PagePaginationDto } from "./dto/page-pagination.dto";
 import { ConfigService } from "@nestjs/config";
 import { CursorPaginationDto } from "./dto/cursor-pagination.dto";
+// import { S3 } from '@aws-sdk/client-s3';
+
+
+import {
+ 
+  InternalServerErrorException,
+} from '@nestjs/common';
+
+
+
+import { envVariableKeys } from './const/env.const';
+
+
 
 type CursorObject = {
   values: { [key: string]: any };
@@ -11,7 +24,11 @@ type CursorObject = {
 
 @Injectable()
 export class CommonService {
+  //private s3: S3;
+
   constructor(private readonly configService: ConfigService) {}
+
+  
 
   async applyPagePaginationParamsToQb<T extends object>(
     qb: SelectQueryBuilder<T>,
@@ -41,7 +58,30 @@ export class CommonService {
     }
   }
 
-  
+  async saveMovieToPermanentStorage(fileName: string) {
+    try {
+      const bucketName = this.configService.get<string>(
+        envVariableKeys.bucketName,
+      );
+
+      await Promise.resolve();
+      // await this.s3.copyObject({
+      //   Bucket: bucketName,
+      //   CopySource: `${bucketName}/public/temp/${fileName}`,
+      //   Key: `public/movie/${fileName}`,
+      //   ACL: 'public-read',
+      // });
+
+      // await this.s3.deleteObject({
+      //   Bucket: bucketName,
+      //   Key: `public/temp/${fileName}`,
+      // });
+    } catch (e) {
+      console.log(e);
+      throw new InternalServerErrorException('S3 에러!');
+    }
+  }
+
   async applyCursorPaginationParamsToQb<T extends object>(
     qb: SelectQueryBuilder<T>,
     dto: CursorPaginationDto,
