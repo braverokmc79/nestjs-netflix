@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
@@ -13,83 +17,78 @@ export class UsersService {
     private readonly configService: ConfigService,
 
     @InjectModel(User.name)
-    private readonly userModel:Model<User>
+    private readonly userModel: Model<User>,
   ) {}
 
   async findAll() {
-    return await this.userModel.find();
+    return await this.userModel.find().exec();
   }
 
-  async findOne(id: number) {
-    const user = await this.userModel.findById(id);
+  async findOne(id: string) {
+    const user = await this.userModel.findById(id).exec();
     if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
     return user;
   }
 
   async create(createUserDto: CreateUserDto) {
+    const { username, email, password, name } = createUserDto;
 
-    const usernameCheck= await this.userModel.findOne({ username: createUserDto.username });
+    const usernameExists = await this.userModel.findOne({ username }).exec();
+    if (usernameExists) {
+      throw new ConflictException(`${username} 은 이미 등록된 유저입니다.`);
+    }
 
-
-    if (usernameCheck)
-      throw new ConflictException(
-        `${createUserDto.username} 은 이미 등록된 유저입니다.`,
-      );
-
-    const emailCheck= await this.userModel.findOne({ email: createUserDto.email });
-
-    if (emailCheck)throw new ConflictException(
-        `${createUserDto.email} 은 이미 등록된 이메일 입니다.`,
-    );
-
+    const emailExists = await this.userModel.findOne({ email }).exec();
+    if (emailExists) {
+      throw new ConflictException(`${email} 은 이미 등록된 이메일입니다.`);
+    }
 
     const hashRounds = this.configService.get<number>('HASH_ROUNDS') || 10;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, hashRounds);
-    
+    const hashedPassword = await bcrypt.hash(password, hashRounds);
 
     await this.userModel.create({
-      username: createUserDto?.username ? createUserDto.username : createUserDto.email,
-      name: createUserDto?.name ? createUserDto.name : createUserDto.email,
-      email: createUserDto.email,
+      username: username || email,
+      name: name || email,
+      email,
       password: hashedPassword,
     });
 
-    return this.userModel.findOne({ email: createUserDto.email });
+    return await this.userModel.findOne({ email }, { password: 0 }).exec();
   }
 
 
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    
-    const user =await this.userModel.findById(id);
 
-    if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
 
-    let hashedPassword:string = "";
-    if(updateUserDto.password){
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    await this.findOne(id); 
+
+    const updateInput = { ...updateUserDto };
+
+    if (updateUserDto.password) {
       const hashRounds = this.configService.get<number>('HASH_ROUNDS') || 10;
-       hashedPassword = await bcrypt.hash(updateUserDto.password, hashRounds);  
+      updateInput.password = await bcrypt.hash(
+        updateUserDto.password,
+        hashRounds,
+      );
     }
 
-    const input = {
-      ...updateUserDto,
-      ...(updateUserDto.password && { password: hashedPassword }),
-    };
+    await this.userModel.findByIdAndUpdate(id, updateInput).exec();
 
-    await this.userModel.findByIdAndUpdate(id, input).exec();
-    
-    return this.userModel.findById(id, { password: false });
+    return await this.userModel
+      .findById(id, { password: 0 }) 
+      .exec();
   }
 
 
 
-  async remove(id: number) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`); 
-
-    return this.userModel.findByIdAndDelete(id);
+  /**
+   * 삭제처리
+   * @param id
+   * @returns 
+   */
+  async remove(id: string) {
+    await this.findOne(id); 
+    return await this.userModel.findByIdAndDelete(id).exec();
   }
-
-
-  
 }
