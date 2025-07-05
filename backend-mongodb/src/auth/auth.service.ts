@@ -10,21 +10,25 @@ import { envVariableKeys } from 'src/common/const/env.const';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { PrismaService, User } from 'src/common/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/users/schema/user.schema';
+import { Model } from 'mongoose';
 
 
 
 @Injectable()
 export class AuthService {
   constructor(
-    // @InjectRepository(User)
-    // private readonly usersRepository: Repository<User>,
+
+    @InjectModel(User.name) 
+    private readonly userModel: Model<User>,
+
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly userService:UsersService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-    private readonly prisma: PrismaService
+
     
   ) {}
 
@@ -126,8 +130,9 @@ export class AuthService {
     if (!email || !password) {
       throw new BadRequestException('이메일와 비밀번호를 입력해 주세요.');
     }
-    //'const user = await this.usersRepository.findOne({ where: { email } });
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    
+    const user =await this.userModel.findOne({email});
+
     if (user&& user?.email) {
       throw new BadRequestException('이미 가입한 이메일 입니다.');
     }
@@ -151,9 +156,9 @@ export class AuthService {
 
   
 
-  async authenticate(email: string, password: string) {
-    //const user = await this.usersRepository.findOne({ where: { email } });
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async authenticate(email: string, password: string) {    
+    const user = await this.userModel.findOne({email}).select('+password').exec();
+    
     if (!user) {
       throw new BadRequestException('잘못된 로그인 정보입니다.1');
     }

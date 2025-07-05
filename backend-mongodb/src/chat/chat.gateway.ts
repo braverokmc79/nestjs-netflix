@@ -4,8 +4,6 @@ import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { WsTransactionInterceptor } from 'src/common/interceptor/ws-transaction.interceptor';
 import { UseInterceptors } from '@nestjs/common';
-import { WsQueryRunner } from 'src/common/decorator/ws-query-runner.decorator';
-import { QueryRunner } from 'typeorm';
 import { CreateChatDto } from './dto/create-chat.dto';
 //ConnectedSocket, MessageBody, SubscribeMessage,
 
@@ -26,7 +24,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: ExtendedSocket) {
     const user = client.data?.user;
-    if (typeof user === 'number') {
+    if (typeof user === 'string') {
       this.chatService.removeClient(user);
     }
   }
@@ -43,8 +41,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       client.data.user = payload.sub;
-      this.chatService.registerClient(payload.sub, client);
-      await this.chatService.joinUserRooms({ sub: payload.sub }, client);
+
+      this.chatService.registerClient(payload.sub.toString(), client);
+      await this.chatService.joinUserRooms({ sub: payload.sub.toString() }, client);
     } catch (e) {
       console.error(e);
       client.disconnect();
@@ -57,14 +56,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleMessage(
     @MessageBody() body: CreateChatDto,
     @ConnectedSocket() client: Socket,
-    @WsQueryRunner() qr: QueryRunner,
+    //@WsQueryRunner() qr: QueryRunner,
   ) {
     const extendedClient = client as ExtendedSocket;
     const userId = extendedClient.data?.user;
 
     if (userId) {
-      const payload = { sub: userId };
-      await this.chatService.createMessage(payload, body, qr);
+      const payload = { sub: userId.toString() };
+      await this.chatService.createMessage(payload , body);
     }
   }
 

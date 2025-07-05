@@ -22,4 +22,5 @@ export class ChatRoom extends BaseTable {
     )
     chats: Chat[];
 
+
 }

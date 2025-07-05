@@ -4,41 +4,14 @@ import { Movie } from 'src/movies/schema/movie.schema';
 import { Chat } from 'src/chat/schema/chat.schema';
 import { ChatRoom } from 'src/chat/schema/chat-room.schema';
 import { MovieUserLike } from 'src/movies/schema/movie-user-like.schema';
-import { Role } from '@prisma/client';
 
-// export enum Role {
-//   admin, //관리자
-//   paidUser, //유료 사용자
-//   user, //일반 이용자
-// }
 
-// export const userSchema = new Schema({
 
-//     id: Number,
-//     username: String,
-//     name: String,
-//     email: String,
-//     password: String,
-//     role: Role,
-
-//     createdMovies: [{
-//         type: Types.ObjectId,
-//         ref: 'Movie',
-//     }],
-//     likedMovies: [{
-//         type: Types.ObjectId,
-//         ref: 'MovieuUserLike',
-//     }],
-//     chats: [{
-//         type: Types.ObjectId,
-//         ref: 'Chat',
-//     }],
-//     chatRooms: [{
-//         type: Types.ObjectId,
-//         ref: 'ChatRoom',
-//     }]
-
-// });
+export enum Role {
+  admin = 'admin', //관리자
+  paidUser = 'paidUser',  //유료 사용자
+  user = 'user', //일반 이용자
+}
 
 @Schema({
   timestamps: true,

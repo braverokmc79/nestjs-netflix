@@ -3,8 +3,8 @@ import { AuthGuard } from "@nestjs/passport";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-local";
 import { AuthService } from "../auth.service";
-//import { User } from "src/users/entity/user.entity"; // 실제 User 타입 위치로 조정하세요
-import { User } from "@prisma/client";
+import { User } from "src/users/schema/user.schema";
+
  
 export class LocalAuthGuard extends AuthGuard('local') {}
 

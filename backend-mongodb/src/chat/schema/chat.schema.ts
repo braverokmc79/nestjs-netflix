@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from 'mongoose';
-import { Movie } from "src/movies/schema/movie.schema";
 import { User } from "src/users/schema/user.schema";
 import { ChatRoom } from "./chat-room.schema";
 

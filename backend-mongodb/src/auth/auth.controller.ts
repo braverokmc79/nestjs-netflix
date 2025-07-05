@@ -1,6 +1,5 @@
 import { Body, ClassSerializerInterceptor, Controller, Get,  Post, Req, Request,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
-//import { User } from 'src/users/entity/user.entity';
 import type{ Request as ExpressRequest } from 'express';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard} from './strategy/jwt.strategy';
@@ -8,7 +7,8 @@ import { Public } from './decorator/public.decorator';
 import { ApiBasicAuth, ApiBearerAuth } from '@nestjs/swagger';
 import { Authorization } from './decorator/authorization.decorator';
 import { PrismaService } from 'src/common/prisma.service';
-import { User } from '@prisma/client';
+import { User } from 'src/users/schema/user.schema';
+
 
 
 @Controller('auth')

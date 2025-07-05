@@ -31,12 +31,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
-import { Role } from '@prisma/client';
+import { Role } from 'src/users/schema/user.schema';
+import 'express-session';
 
 
-@Controller('movie')
+
+
+@Controller('movies')
 @ApiBearerAuth()
-@ApiTags('movie')
+@ApiTags('movies')
 // @UseInterceptors(ClassSerializerInterceptor)
 export class MoviesController {
   constructor(private readonly MoviesService: MoviesService) {}
@@ -75,10 +78,12 @@ export class MoviesController {
   /// /movie/askdjfoixcv
   @Get(':id')
   @Public()
-  getMovie(@Param('id') id: string, @Req() request: any) {
-    const session = request.session;
+  getMovie(@Param('id') id: string, @Req() request: Express.Request) {
+    const session= request.session ;
 
-    const movieCount = session.movieCount ?? {};
+    //const movieCount = session.movieCount ?? {};
+    
+    const movieCount = (session.movieCount ?? {}) as { [id: string]: number };
 
     request.session.movieCount = {
       ...movieCount,

@@ -8,7 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { User } from './schema/user.schema';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
@@ -24,11 +24,40 @@ export class UsersService {
     return await this.userModel.find().exec();
   }
 
-  async findOne(id: string) {
-    const user = await this.userModel.findById(id).exec();
-    if (!user) throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
-    return user;
+x
+
+async findOne(id: string) {
+  let user: any = null;
+
+  if (isValidObjectId(id)) {
+    user = await this.userModel.findById(id, {
+      createdMovies: 0,
+      likedMovies: 0,
+      chats: 0,
+      chatRooms: 0,
+    }).lean();
   }
+
+  const userName = await this.userModel.findOne({ email: id }, {
+    createdMovies: 0,
+    likedMovies: 0,
+    chats: 0,
+    chatRooms: 0,
+  }).lean();
+
+  if (!user && !userName) {
+    throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
+  }
+
+  const result = user as User || userName;
+
+  return {
+    ...result,
+    _id: result?._id ? result._id.toString() :  undefined,
+  };
+}
+
+
 
   async create(createUserDto: CreateUserDto) {
     const { username, email, password, name } = createUserDto;

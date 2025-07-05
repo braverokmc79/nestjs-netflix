@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import {  IsOptional, IsString } from "class-validator";
 
 
 export class CreateChatDto {
@@ -6,10 +6,10 @@ export class CreateChatDto {
     @IsString()
     message:string;
 
-
-    @IsNumber()
+    @IsString()
+    //@IsNumber()
     @IsOptional()
-    room?:number;
+    room?:string;
 
 }
 

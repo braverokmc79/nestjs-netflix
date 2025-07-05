@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from 'mongoose';
-import { Movie } from "src/movies/schema/movie.schema";
 import { User } from "src/users/schema/user.schema";
 import { Chat } from "./chat.schema";
 
@@ -25,3 +24,5 @@ export class ChatRoom extends Document{
     chats:Chat[];
 
 }
+
+export const ChatRoomSchema = SchemaFactory.createForClass(ChatRoom);
