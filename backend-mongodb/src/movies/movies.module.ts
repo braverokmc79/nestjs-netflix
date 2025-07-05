@@ -11,6 +11,8 @@ import { Genre } from 'src/genre/entity/genre.entity';
 import { GenreSchema } from 'src/genre/schema/genre.schema';
 import { MoviesController } from './movies.controller';
 import { MoviesService } from './movies.service';
+import { User } from 'src/users/entity/user.entity';
+import { UserSchema } from 'src/users/schema/user.schema';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { MoviesService } from './movies.service';
       { name: MovieUserLike.name, schema: MovieUserLikeSchema },
       { name: Director.name, schema: DirectorSchema },
       { name:Genre.name, schema:GenreSchema},
+      {name:User.name, schema:UserSchema},
       
     ]),
     CommonModule,
