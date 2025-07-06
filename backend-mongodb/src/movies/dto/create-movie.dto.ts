@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray,  IsNotEmpty, IsNumber, IsString} from 'class-validator';
+import { ArrayNotEmpty, IsArray,  IsMongoId,  IsNotEmpty,  IsString} from 'class-validator';
 
 export class CreateMovieDto {
   @IsNotEmpty()
@@ -22,29 +21,23 @@ export class CreateMovieDto {
   detail: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsMongoId()
   @ApiProperty({
     description: '감독 객에 ID',
     example: 1,
     required: true,
   })
-  directorId: number;
+  directorId: string;
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsNumber(
-    {},
-    {
-      each: true,
-    },
-  )
-  @Type(() => Number) // 문자열을 숫자로 변환
+  @IsMongoId({ each: true })  
   @ApiProperty({
     description: '장르 IDs',
-    example: [1, 2, 3],
+    example: ["1", "2", "3"],
     required: true,
   })
-  genreIds: number[];
+  genreIds: string[];
 
   @IsString()
   @ApiProperty({

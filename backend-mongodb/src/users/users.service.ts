@@ -26,35 +26,45 @@ export class UsersService {
 
 x
 
-async findOne(id: string) {
-  let user: any = null;
 
+async findOne(id: string) {
+  let user :any = null;
+
+  // 1. ObjectId로 찾기
   if (isValidObjectId(id)) {
     user = await this.userModel.findById(id, {
       createdMovies: 0,
       likedMovies: 0,
       chats: 0,
       chatRooms: 0,
-    }).lean();
+      name: 0,
+      password: 0,
+    }) as User;
   }
 
-  const userName = await this.userModel.findOne({ email: id }, {
-    createdMovies: 0,
-    likedMovies: 0,
-    chats: 0,
-    chatRooms: 0,
-  }).lean();
+  // 2. 이메일로 찾기
+  if (!user) {
+    user = await this.userModel.findOne(
+      { email: id },
+      {
+        createdMovies: 0,
+        likedMovies: 0,
+        chats: 0,
+        chatRooms: 0,
+        name: 0,
+        password: 0,
+      }
+    ) as User;
+  }
 
-  if (!user && !userName) {
+  // 3. 존재하지 않으면 예외
+  if (!user) {
     throw new NotFoundException(`${id} 를 찾을 수 없습니다.`);
   }
 
-  const result = user as User || userName;
-
-  return {
-    ...result,
-    _id: result?._id ? result._id.toString() :  undefined,
-  };
+  // 4. .toObject()로 변환 (transform 적용됨)
+  return user.toObject();
+  
 }
 
 

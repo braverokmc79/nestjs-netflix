@@ -81,6 +81,7 @@ export class MoviesController {
   getMovie(@Param('id') id: string, @Req() request: Express.Request) {
     const session= request.session ;
 
+    console.log("🔖🔖🔖")
     //const movieCount = session.movieCount ?? {};
     
     const movieCount = (session.movieCount ?? {}) as { [id: string]: number };

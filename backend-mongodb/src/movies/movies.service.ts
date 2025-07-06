@@ -273,6 +273,8 @@ export class MoviesService {
     }
   }
 
+  
+
   async create(createMovieDto: CreateMovieDto, userId: number) {
     const session = await this.movieModel.startSession();
     session.startTransaction();
@@ -295,6 +297,7 @@ export class MoviesService {
           `존재하지 않는 장르가 있습니다! 존재하는 ids -> ${genres.map((genre) => genre.id).join(',')}`,
         );
       }
+
 
       const movieDetail = await this.movieDetailModel.create(
         [
@@ -322,6 +325,8 @@ export class MoviesService {
           session,
         },
       );
+
+      console.log("✔️🔖 movie   :",     );
 
       await session.commitTransaction();
 

@@ -69,3 +69,10 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.set("toObject", {
+  transform: (model, ret) => {
+    ret._id =String(ret._id);
+    return ret;
+  }
+});

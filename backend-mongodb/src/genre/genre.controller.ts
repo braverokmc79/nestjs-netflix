@@ -15,7 +15,7 @@ export class GenreController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
+  findOne(@Param('id') id: string) {
     return this.genreService.findOne(id);
   }
 
@@ -26,7 +26,7 @@ export class GenreController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id') id: string,
     @Body() updateGenreDto: UpdateGenreDto,
   ) {
     return this.genreService.update(id, updateGenreDto);
